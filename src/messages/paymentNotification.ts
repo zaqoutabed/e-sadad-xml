@@ -87,7 +87,13 @@ export function paymentNotificationBody(results: TrxResult[]): XmlNode {
     el(
       'Transactions',
       results.map((r) =>
-        el('TrxInf', leaf('JOEBPPSTrx', r.joebppsTrx), leaf('ProcessDate', r.processDate), leaf('STMTDate', r.stmtDate), resultNode(r.result)),
+        el(
+          'TrxInf',
+          leaf('JOEBPPSTrx', r.joebppsTrx),
+          leaf('ProcessDate', r.processDate),
+          leaf('STMTDate', r.stmtDate),
+          resultNode(r.result),
+        ),
       ),
     ),
   );

@@ -1,11 +1,12 @@
 import { EsadadError } from '../errors';
 import type { ApiHandler, Reply, RequestContext } from '../handlers/types';
 import { buildEnvelope, parseHeader } from '../messages/envelope';
-import type { Credentials, EsadadStore, HandlerInput, HandlerOutput, Logger, MessageSigner } from '../types';
+import type { Credentials, EsadadHooks, EsadadStore, HandlerInput, HandlerOutput, Logger, MessageSigner } from '../types';
 import { formatTimestamp } from '../utils/datetime';
 import { el, toXml } from '../xml/builder';
 import { canonicalMsgBody } from '../xml/c14n';
 import { parseXml, text, type XDocument } from '../xml/parser';
+import { runInBackground } from './background';
 import type { ResultResolver } from './results';
 import { safeEqual } from './security';
 
@@ -19,6 +20,7 @@ export interface PipelineOptions {
   verifySignature: boolean;
   maxBodyBytes: number;
   timestamp: () => string;
+  hooks: EsadadHooks;
 }
 
 /** GUIDs are echoed in responses and written to logs, so only plain identifier characters are accepted. */
@@ -52,6 +54,7 @@ export class RequestPipeline {
   constructor(private readonly options: PipelineOptions) {}
 
   async execute(handler: ApiHandler, input: HandlerInput): Promise<HandlerOutput> {
+    const startedAt = Date.now();
     const ctx = this.readInputs(handler, input);
     let reply: Reply;
 
@@ -77,7 +80,16 @@ export class RequestPipeline {
       throw new EsadadSigningError(err);
     }
     await this.log(ctx, handler, 'Response', xml, reply.result.code);
+    this.notifyCompleted(ctx, reply, xml, Date.now() - startedAt);
     return { xml, result: reply.result, api: handler.api, guid: ctx.guid };
+  }
+
+  /** Runs `hooks.onRequestCompleted` in the background (metrics, alerts). */
+  private notifyCompleted(ctx: RequestContext, reply: Reply, responseXml: string, durationMs: number): void {
+    const hook = this.options.hooks.onRequestCompleted;
+    if (!hook) return;
+    const event = { api: ctx.api, guid: ctx.guid, result: reply.result, durationMs, requestXml: ctx.rawXml, responseXml };
+    runInBackground(`[${ctx.api}] ${ctx.guid}: onRequestCompleted`, () => hook(event), this.options.logger);
   }
 
   // --- Step 1 ---------------------------------------------------------------

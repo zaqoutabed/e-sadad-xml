@@ -2,12 +2,12 @@
 
 Node.js library for **E-SADAD biller integration**. It implements the endpoints E-SADAD calls on a biller:
 
-| API | Purpose | Request → Response type |
-|---|---|---|
-| **BillPull** | Return the bills of a post-paid account | `BILPULRQ` → `BILPULRS` |
-| **PrepaidValidation** | Validate a pre-paid account and amount before payment | `BILRPREPADVALRQ` → `BILRPREPADVALRS` |
-| **ReceivePaymentNotification** | Receive a payment and post it to your billing system | `BLRPMTNTFRQ` → `BLRPMTNTFRS` |
-| **Availability** | Health check (`GET /availability?token=…`, JSON) | — |
+| API                            | Purpose                                               | Request → Response type               |
+| ------------------------------ | ----------------------------------------------------- | ------------------------------------- |
+| **BillPull**                   | Return the bills of a post-paid account               | `BILPULRQ` → `BILPULRS`               |
+| **PrepaidValidation**          | Validate a pre-paid account and amount before payment | `BILRPREPADVALRQ` → `BILRPREPADVALRS` |
+| **ReceivePaymentNotification** | Receive a payment and post it to your billing system  | `BLRPMTNTFRQ` → `BLRPMTNTFRS`         |
+| **Availability**               | Health check (`GET /availability?token=…`, JSON)      | —                                     |
 
 It takes care of the E-SADAD protocol: XML parsing and building, `MsgBody` signature verification and signing (RSA-SHA256, compatible byte-for-byte with the E-SADAD reference implementation), request and response logging, idempotent payment posting, currency decimals and error responses. You write only the part that talks to your billing system.
 
@@ -44,11 +44,11 @@ Written in TypeScript and shipped as **CommonJS and ES modules with type definit
 
 Node.js versions that still receive security updates:
 
-| Node.js | Status | Minimum |
-|---|---|---|
-| 22 | Maintenance LTS (until April 2027) | 22.23.5 |
-| 24 | LTS | 24.22.3 |
-| 26 | LTS | 26.13.1 |
+| Node.js | Status                             | Minimum |
+| ------- | ---------------------------------- | ------- |
+| 22      | Maintenance LTS (until April 2027) | 22.23.5 |
+| 24      | LTS                                | 24.22.3 |
+| 26      | LTS                                | 26.13.1 |
 
 `engines`: `^22.23.5 || ^24.22.3 || >=26.13.1`. Each minimum is the latest security release of that line. Older lines (18, 20) are end-of-life and not supported.
 
@@ -100,7 +100,7 @@ const esadad = new EsadadService({
     },
   ],
   certificates: {
-    esadadCertificate: { path: process.env.ESADAD_CERT! },                                // E-SADAD public .cer
+    esadadCertificate: { path: process.env.ESADAD_CERT! }, // E-SADAD public .cer
     billerPfx: { path: process.env.BILLER_PFX!, password: process.env.BILLER_PFX_PASSWORD! }, // your .pfx
   },
   normalizeBillingNo: (billingNo) => normalizeMobileNumber(billingNo), // billing number = mobile number
@@ -120,13 +120,15 @@ Runnable versions: [`examples/prepaid-typescript.ts`](examples/prepaid-typescrip
 ## Quick start (JavaScript)
 
 ```js
-const express = require('express');                         // or: import express from 'express'
+const express = require('express'); // or: import express from 'express'
 const { EsadadService, normalizeMobileNumber } = require('e-sadad-xml');
 const { createEsadadRouter } = require('e-sadad-xml/express');
 
 const esadad = new EsadadService({
   biller: { code: 999 },
-  services: [{ serviceType: 'MOBILE_TOPUP', paymentType: 'PrePaid', currency: 'ILS', bankCode: 99, iban: 'PS00XXXX000000000000000000000' }],
+  services: [
+    { serviceType: 'MOBILE_TOPUP', paymentType: 'PrePaid', currency: 'ILS', bankCode: 99, iban: 'PS00XXXX000000000000000000000' },
+  ],
   certificates: {
     esadadCertificate: { path: './certs/ESADAD.cer' },
     billerPfx: { path: './certs/biller.pfx', password: process.env.BILLER_PFX_PASSWORD },
@@ -134,7 +136,9 @@ const esadad = new EsadadService({
   normalizeBillingNo: normalizeMobileNumber,
   adapter: {
     validatePrepaid: async (req) => ({ valid: await customerExists(req.billingNo) }),
-    postPayment: async (trx) => { await topUp(trx.billingNo, trx.paidAmount, trx.joebppsTrx); },
+    postPayment: async (trx) => {
+      await topUp(trx.billingNo, trx.paidAmount, trx.joebppsTrx);
+    },
   },
   store: mySqlStore,
 });
@@ -148,38 +152,63 @@ app.listen(3000);
 
 `new EsadadService(config)` validates the configuration and throws `EsadadConfigError` straight away if anything is wrong (missing key, duplicate service, bad currency, and so on).
 
-| Option | Required | Description |
-|---|---|---|
-| `biller` | ✓ | `{ code, name? }`. `code` is sent as `SdrCode` and `BillerCode`. |
-| `services` | ✓ | List of services (below). |
-| `certificates` | ✓* | `esadadCertificate` (E-SADAD `.cer`/`.crt`, PEM or DER) plus either `billerPfx: { path \| data, password }` or `billerPrivateKey: { path \| data, passphrase? }` (PEM). |
-| `signer` | ✓* | Custom `MessageSigner` (for example an HSM) instead of `certificates`. |
-| `adapter` | ✓ | Your billing system. See [Adapter](#adapter-connecting-your-billing-system). |
-| `store` | recommended | Log storage. Defaults to `InMemoryStore`, which is **not for production**. |
-| `normalizeBillingNo` | | `(billingNo, serviceType) => string \| null`. Return `null`/`''` to answer INVALID_BILLING_NUMBER. Default: trim. |
-| `credentials` | | `{ username, password }`. When set, the `username`/`password` query parameters must match. |
-| `availabilityToken` | | Shared token for `/availability`. Without it, the endpoint answers 503. |
-| `healthCheck` | | `() => boolean \| Promise<boolean>`, used by `/availability` (for example, ping your database). |
-| `resultCodes` | | Override result codes, for example `{ INVALID_AMOUNT: { code: 13, desc: 'Invalid Amount', severity: 'Error' } }`. |
-| `maxBodyBytes` | | Maximum request size. Default 512 KB. |
-| `verifySignature` | | Default `true`. Set `false` only for local development. |
-| `timestamp` | | Custom `TmStp` generator. Default: local time `YYYY-MM-DDTHH:mm:ss`. |
-| `logger` | | Any object with optional `debug/info/warn/error` (for example `console`, pino, winston). |
+| Option               | Required    | Description                                                                                                                                                             |
+| -------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `biller`             | ✓           | `{ code, name? }`. `code` is sent as `SdrCode` and `BillerCode`.                                                                                                        |
+| `services`           | ✓           | List of services (below).                                                                                                                                               |
+| `certificates`       | ✓*          | `esadadCertificate` (E-SADAD `.cer`/`.crt`, PEM or DER) plus either `billerPfx: { path \| data, password }` or `billerPrivateKey: { path \| data, passphrase? }` (PEM). |
+| `signer`             | ✓*          | Custom `MessageSigner` (for example an HSM) instead of `certificates`.                                                                                                  |
+| `adapter`            | ✓           | Your billing system. See [Adapter](#adapter-connecting-your-billing-system).                                                                                            |
+| `store`              | recommended | Log storage. Defaults to `InMemoryStore`, which is **not for production**.                                                                                              |
+| `normalizeBillingNo` |             | `(billingNo, serviceType) => string \| null`. Return `null`/`''` to answer INVALID_BILLING_NUMBER. Default: trim.                                                       |
+| `credentials`        |             | `{ username, password }`. When set, the `username`/`password` query parameters must match.                                                                              |
+| `availabilityToken`  |             | Shared token for `/availability`. Without it, the endpoint answers 503.                                                                                                 |
+| `healthCheck`        |             | `() => boolean \| Promise<boolean>`, used by `/availability` (for example, ping your database).                                                                         |
+| `resultCodes`        |             | Override result codes, for example `{ INVALID_AMOUNT: { code: 13, desc: 'Invalid Amount', severity: 'Error' } }`.                                                       |
+| `maxBodyBytes`       |             | Maximum request size. Default 512 KB.                                                                                                                                   |
+| `verifySignature`    |             | Default `true`. Set `false` only for local development.                                                                                                                 |
+| `hooks`              |             | Background callbacks: `onPaymentPosted` (SMS, e-mail after a payment) and `onRequestCompleted` (metrics). They never delay or change the response.                      |
+| `timestamp`          |             | Custom `TmStp` generator. Default: local time `YYYY-MM-DDTHH:mm:ss`.                                                                                                    |
+| `logger`             |             | Any object with optional `debug/info/warn/error` (for example `console`, pino, winston).                                                                                |
 
 \* One of `certificates` or `signer`.
 
 **Service** (the "eSadad Services Configurations" table):
 
-| Field | Description |
-|---|---|
-| `serviceType` | E-SADAD `ServiceType` code, for example `MOBILE_TOPUP`. |
-| `nameAr`, `nameEn` | Display names (optional). |
-| `paymentType` | `'PrePaid'` (PrepaidValidation) or `'PostPaid'` (BillPull). |
-| `currency` | `JOD` (3 decimals), `USD`, `ILS`, `EUR`/`EURO` (2 decimals). |
-| `bankCode` | Settlement bank code, sent as `SetBnkCode`. |
-| `iban` | Settlement IBAN, sent as `AcctNo`. |
-| `partialPayment` | BillPull `AllowPart` (default `false`). |
-| `lowerValue`, `upperValue` | Inclusive amount limits. |
+| Field                      | Description                                                  |
+| -------------------------- | ------------------------------------------------------------ |
+| `serviceType`              | E-SADAD `ServiceType` code, for example `MOBILE_TOPUP`.     |
+| `nameAr`, `nameEn`         | Display names (optional).                                    |
+| `paymentType`              | `'PrePaid'` (PrepaidValidation) or `'PostPaid'` (BillPull).  |
+| `currency`                 | `JOD` (3 decimals), `USD`, `ILS`, `EUR`/`EURO` (2 decimals). |
+| `bankCode`                 | Settlement bank code, sent as `SetBnkCode`.                  |
+| `iban`                     | Settlement IBAN, sent as `AcctNo`.                           |
+| `partialPayment`           | BillPull `AllowPart` (default `false`).                      |
+| `lowerValue`, `upperValue` | Inclusive amount limits.                                     |
+
+### Config tables or a config file
+
+The integration document describes Biller, Services and Certificates **config tables**. Load them straight from your database or from a JSON file, using the document's column names (`BillerCode`, `ServiceTypeCode`, `CertificatePath`, ...):
+
+```ts
+import { EsadadService, configFromTables, loadConfigFile } from 'e-sadad-xml';
+
+new EsadadService({ ...loadConfigFile('./esadad.config.json'), adapter, store });
+new EsadadService({ ...configFromTables({ biller, services, certificates }), adapter, store }); // database rows
+```
+
+Column names ignore case and underscores, string values from databases are converted, and `"env:NAME"` keeps passwords out of files. Details: [docs/03-configuration.md](docs/03-configuration.md#config-tables-or-a-config-file).
+
+### Hooks
+
+```ts
+hooks: {
+  onPaymentPosted: async (trx) => sms.send(trx.billingNo, `Paid ${trx.paidAmount} ${trx.currency}`), // not called for retries
+  onRequestCompleted: (e) => metrics.timing('esadad', e.durationMs, { api: e.api, code: e.result.code }),
+}
+```
+
+Hooks run in the background after the response is ready; their errors are logged only.
 
 ## Adapter: connecting your billing system
 
@@ -187,17 +216,17 @@ Implement only the methods for the APIs you use. Every method may be `async`.
 
 ```ts
 interface BillerAdapter {
-  getBills?(request: BillPullRequest, ctx): BillPullResult;                        // BillPull
+  getBills?(request: BillPullRequest, ctx): BillPullResult; // BillPull
   validatePrepaid?(request: PrepaidValidationRequest, ctx): PrepaidValidationResult; // PrepaidValidation
-  postPayment?(transaction: PaymentTransaction, ctx): PostPaymentResult | void;     // ReceivePaymentNotification
+  postPayment?(transaction: PaymentTransaction, ctx): PostPaymentResult | void; // ReceivePaymentNotification
 }
 ```
 
-| Method | Return |
-|---|---|
-| `getBills` | `{ found: false }` → INVALID_BILLING_NUMBER<br>`{ found: true, bills: [{ dueAmount: 12.5, billNo, dueDate, ... }] }` → bill(s) with an amount due<br>`{ found: true, bills: [{ dueAmount: 0 }] }` → bill with nothing due |
-| `validatePrepaid` | `{ valid: true }`, optionally overriding `dueAmount`, `validationCode` or `subPayments`<br>`{ valid: false, result?: 'INVALID_BILLING_NUMBER' }` |
-| `postPayment` | Nothing (success), or `{ success: false, result? }`. Throw on failure. |
+| Method            | Return                                                                                                                                                                                                                    |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getBills`        | `{ found: false }` → INVALID_BILLING_NUMBER<br>`{ found: true, bills: [{ dueAmount: 12.5, billNo, dueDate, ... }] }` → bill(s) with an amount due<br>`{ found: true, bills: [{ dueAmount: 0 }] }` → bill with nothing due |
+| `validatePrepaid` | `{ valid: true }`, optionally overriding `dueAmount`, `validationCode` or `subPayments`<br>`{ valid: false, result?: 'INVALID_BILLING_NUMBER' }`                                                                          |
+| `postPayment`     | Nothing (success), or `{ success: false, result? }`. Throw on failure.                                                                                                                                                    |
 
 The `request` and `transaction` objects contain parsed values: `billingNo` (normalised), `originalBillingNo`, amounts as numbers, the matching `service` config, `guid`, and `rawXml`.
 
@@ -211,8 +240,8 @@ The store implements the two log tables from the integration document:
 
 ```ts
 interface EsadadStore {
-  logTransaction(entry: TransactionLogEntry): void | Promise<void>;          // EsadadTransactionsLogs
-  logPayment(entry: PaymentLogEntry): void | Promise<void>;                  // EsadadPaymentsLogs (IsPaymentPosted = false)
+  logTransaction(entry: TransactionLogEntry): void | Promise<void>; // EsadadTransactionsLogs
+  logPayment(entry: PaymentLogEntry): void | Promise<void>; // EsadadPaymentsLogs (IsPaymentPosted = false)
   isPaymentPosted(joebppsTrx: string, guid: string): boolean | Promise<boolean>;
   markPaymentPosted(joebppsTrx: string, guid: string): void | Promise<void>; // most recent row → true
 }
@@ -230,12 +259,12 @@ Failures writing the transaction log are logged and do not change the response. 
 
 `createEsadadRouter(service, options?)` registers these routes (relative to where you mount it):
 
-| Method | Default path | Query |
-|---|---|---|
-| POST | `/BillPull` | `guid`, `username`?, `password`? |
-| POST | `/prepaid/PrepaidValidation` | same |
-| POST | `/Payment/ReceivePaymentNotification` | same |
-| GET | `/availability` | `token` |
+| Method | Default path                          | Query                            |
+| ------ | ------------------------------------- | -------------------------------- |
+| POST   | `/BillPull`                           | `guid`, `username`?, `password`? |
+| POST   | `/prepaid/PrepaidValidation`          | same                             |
+| POST   | `/Payment/ReceivePaymentNotification` | same                             |
+| GET    | `/availability`                       | `token`                          |
 
 Mount it under a versioned prefix, as the integration document recommends: `app.use('/api/v1/esadad', router)`.
 
@@ -245,18 +274,18 @@ The XML endpoints always answer **HTTP 200** with `Content-Type: application/xml
 
 ## Result codes
 
-| Key | Code | Source |
-|---|---|---|
-| `SUCCESS` | 0 | E-SADAD reference ✔ |
-| `INVALID_SIGNATURE` | 2 | E-SADAD reference ✔ |
-| `INVALID_BILLING_NUMBER` | 408 | E-SADAD reference ✔ |
-| `INVALID_REQUEST` | 1 | library default |
-| `AUTHENTICATION_FAILED` | 3 | library default |
-| `INVALID_BILLER_CODE` | 4 | library default |
-| `INVALID_SERVICE_TYPE` | 5 | library default |
-| `INVALID_CURRENCY` | 6 | library default |
-| `INVALID_AMOUNT` | 7 | library default |
-| `GENERAL_ERROR` | 500 | library default |
+| Key                      | Code | Source              |
+| ------------------------ | ---- | ------------------- |
+| `SUCCESS`                | 0    | E-SADAD reference ✔ |
+| `INVALID_SIGNATURE`      | 2    | E-SADAD reference ✔ |
+| `INVALID_BILLING_NUMBER` | 408  | E-SADAD reference ✔ |
+| `INVALID_REQUEST`        | 1    | library default     |
+| `AUTHENTICATION_FAILED`  | 3    | library default     |
+| `INVALID_BILLER_CODE`    | 4    | library default     |
+| `INVALID_SERVICE_TYPE`   | 5    | library default     |
+| `INVALID_CURRENCY`       | 6    | library default     |
+| `INVALID_AMOUNT`         | 7    | library default     |
+| `GENERAL_ERROR`          | 500  | library default     |
 
 Override any of them with `config.resultCodes`.
 
@@ -340,10 +369,10 @@ const { statusCode, body } = await esadad.availability(token);
 ## Utilities
 
 ```ts
-normalizeMobileNumber('970599123456');  // '0599123456' ('' when invalid)
-toInternationalMobile('0599123456');    // '970599123456'
-formatAmount(10, 'JOD');                // '10.000'
-formatAmount(5.5, 'ILS');               // '5.50'
+normalizeMobileNumber('970599123456'); // '0599123456' ('' when invalid)
+toInternationalMobile('0599123456'); // '970599123456'
+formatAmount(10, 'JOD'); // '10.000'
+formatAmount(5.5, 'ILS'); // '5.50'
 ```
 
 ## Security
@@ -388,15 +417,18 @@ npm install        # also builds dist/
 
 ### Scripts
 
-| Command | What it does |
-|---|---|
-| `npm run build` | Builds `dist/` (CJS `.js`, ESM `.mjs`, types `.d.ts`/`.d.mts`) with tsup. |
-| `npm run typecheck` | `tsc --noEmit` over `src` and `test`. |
-| `npm test` | Runs the test suite (vitest). |
-| `npm run test:watch` | Tests in watch mode. |
-| `npm run smoke` | Loads the built package with `require` and `import`. |
+| Command                           | What it does                                                              |
+| --------------------------------- | ------------------------------------------------------------------------- |
+| `npm run build`                   | Builds `dist/` (CJS `.js`, ESM `.mjs`, types `.d.ts`/`.d.mts`) with tsup. |
+| `npm run typecheck`               | `tsc --noEmit` over `src` and `test`.                                     |
+| `npm test`                        | Runs the test suite (vitest).                                             |
+| `npm run test:watch`              | Tests in watch mode.                                                      |
+| `npm run smoke`                   | Loads the built package with `require` and `import`.                      |
+| `npm run test:coverage`           | Tests with a coverage report.                                             |
+| `npm run lint` / `lint:fix`       | ESLint (bugs and consistency).                                            |
+| `npm run format` / `format:check` | Prettier (formatting).                                                    |
 
-CI (`.github/workflows/ci.yml`) runs typecheck, tests, build and smoke on Node 22, 24 and 26.
+CI (`.github/workflows/ci.yml`) runs lint, format check, typecheck, tests, build, smoke and audit on Node 22, 24 and 26. The Express tests run against both Express 4 and 5.
 
 ### Project structure
 
@@ -413,7 +445,10 @@ src/
 │   ├── services.ts           ServiceRegistry: service lookup, billing-number normalisation
 │   ├── results.ts            ResultResolver: key/object/error → ResultCode
 │   ├── lock.ts               KeyedLock: one-at-a-time per payment
+│   ├── background.ts         runInBackground: hooks that never delay the response
 │   └── security.ts           Constant-time comparison
+│
+├── config/tables.ts          configFromTables / loadConfigFile (integration-document config tables)
 │
 ├── handlers/                 One file per API: validation + business flow
 │   ├── types.ts              ApiHandler interface, HandlerDeps, RequestContext
@@ -493,8 +528,9 @@ scripts/smoke.*               Load the built package from CJS and ESM
 
 ### Conventions
 
-- TypeScript `strict` mode. No `any` in `src/`.
-- Comments explain *why*. Every exported function or class has a short doc comment.
+- TypeScript `strict` mode. No `any` (enforced by ESLint).
+- Run `npm run lint` and `npm run format` before committing; CI fails otherwise.
+- Comments explain _why_. Every exported function or class has a short doc comment.
 - Errors inside handlers: `throw new EsadadError(key)` for expected outcomes. Plain `Error` means "unexpected", and becomes GENERAL_ERROR with the details logged only.
 - Never build XML with string templates in `src/`: use `el`, `leaf` and `optLeaf`, which escape values.
 - Keep runtime dependencies minimal (currently `@xmldom/xmldom` and `node-forge`). Run `npm audit --omit=dev` before releasing.

@@ -39,7 +39,9 @@ const services: ServiceConfig[] = [
 const adapter: BillerAdapter = {
   // `request.service` tells you which service was requested.
   async validatePrepaid(request) {
-    console.log(`Prepaid ${request.service.serviceType}: ${request.billingNo} wants ${request.dueAmount} ${request.service.currency}`);
+    console.log(
+      `Prepaid ${request.service.serviceType}: ${request.billingNo} wants ${request.dueAmount} ${request.service.currency}`,
+    );
     return { valid: true };
   },
   async getBills(request) {

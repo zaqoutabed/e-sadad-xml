@@ -7,7 +7,9 @@ import { EsadadService, EsadadSigningError, InMemoryStore, type ApiName } from '
 
 const esadad = new EsadadService({
   biller: { code: 999 },
-  services: [{ serviceType: 'MOBILE_TOPUP', paymentType: 'PrePaid', currency: 'ILS', bankCode: 99, iban: 'PS00XXXX000000000000000000000' }],
+  services: [
+    { serviceType: 'MOBILE_TOPUP', paymentType: 'PrePaid', currency: 'ILS', bankCode: 99, iban: 'PS00XXXX000000000000000000000' },
+  ],
   certificates: {
     esadadCertificate: { path: 'dev-keys/esadad-dev.cer' },
     billerPfx: { path: 'dev-keys/biller-dev.pfx', password: 'dev-password' },

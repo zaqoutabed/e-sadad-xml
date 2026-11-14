@@ -11,7 +11,9 @@
  */
 export function normalizeMobileNumber(input: string | null | undefined): string {
   if (!input) return '';
-  let n = String(input).trim().replace(/[\s\-()]/g, '');
+  let n = String(input)
+    .trim()
+    .replace(/[\s\-()]/g, '');
   if (n.startsWith('+')) n = n.slice(1);
   else if (n.startsWith('00')) n = n.slice(2);
   if (!/^\d+$/.test(n)) return '';

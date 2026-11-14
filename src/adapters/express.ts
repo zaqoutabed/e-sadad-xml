@@ -108,7 +108,10 @@ export function createEsadadRouter(service: EsadadService, options: EsadadRouter
   router.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
     if (res.headersSent) return next(err);
     const status = clientErrorStatus(err) ?? 500;
-    res.status(status).type('text/plain').send(STATUS_TEXT[status] ?? 'Bad Request');
+    res
+      .status(status)
+      .type('text/plain')
+      .send(STATUS_TEXT[status] ?? 'Bad Request');
   });
 
   return router;

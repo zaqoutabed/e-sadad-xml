@@ -62,7 +62,9 @@ const payment = (trx: string, billingNo: string, amount: string) => `<MsgBody><T
 
 // --- Scenarios ---------------------------------------------------------------------
 console.log('1) Availability');
-console.log(await requestAvailability({ baseUrl: BASE.replace(/\/api\/.*$/, ''), path: '/api/v1/esadad/availability', token: 'dev-token' }));
+console.log(
+  await requestAvailability({ baseUrl: BASE.replace(/\/api\/.*$/, ''), path: '/api/v1/esadad/availability', token: 'dev-token' }),
+);
 
 console.log('\n2) Prepaid validation: valid number, then invalid number');
 await send('/prepaid/PrepaidValidation', 'BILRPREPADVALRQ', prepaid('0599123456', '20'));

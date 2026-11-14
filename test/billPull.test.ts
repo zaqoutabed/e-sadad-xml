@@ -28,6 +28,15 @@ describe('BillPull', () => {
     expect(getBills.mock.calls[0]![0]).toMatchObject({ billingNo: 'CUST-1', serviceType: 'Invoices' });
   });
 
+  it('logs the service currency with each transaction', async () => {
+    const { service, store } = createService({ getBills: () => ({ found: false }) });
+    await service.billPull({ body: await esadadRequest('bp-log', RQ, body()), guid: 'bp-log' });
+    expect(store.transactions.map((t) => [t.transactionType, t.serviceType, t.currency])).toEqual([
+      ['Request', 'Invoices', 'JOD'],
+      ['Response', 'Invoices', 'JOD'],
+    ]);
+  });
+
   it('returns a bill without due amount', async () => {
     const { service } = createService({ getBills: () => ({ found: true, bills: [{ dueAmount: 0 }] }) });
     const out = await service.billPull({ body: await esadadRequest('bp-2', RQ, body()), guid: 'bp-2' });

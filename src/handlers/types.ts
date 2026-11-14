@@ -2,7 +2,15 @@ import type { ApiName, ResultCode } from '../constants';
 import type { KeyedLock } from '../core/lock';
 import type { ResultResolver } from '../core/results';
 import type { ServiceRegistry } from '../core/services';
-import type { BillerAdapter, EsadadStore, HandlerContext, Logger, MessageHeader, TransactionLogEntry } from '../types';
+import type {
+  BillerAdapter,
+  EsadadHooks,
+  EsadadStore,
+  HandlerContext,
+  Logger,
+  MessageHeader,
+  TransactionLogEntry,
+} from '../types';
 import type { XmlNode } from '../xml/builder';
 import type { XDocument } from '../xml/parser';
 
@@ -15,6 +23,7 @@ export interface HandlerDeps {
   results: ResultResolver;
   logger: Logger;
   locks: KeyedLock;
+  hooks: EsadadHooks;
 }
 
 /** Fields copied from a request into the transaction log. */

@@ -3,6 +3,7 @@
 ⏱ 5 min · 🎯 You'll learn: why you need a store, and how to plug in SQL Server or PostgreSQL.
 
 > **TL;DR**
+>
 > - The **store** saves request/response logs and payment logs (required by E-SADAD).
 > - It's also what **prevents double payments**.
 > - `InMemoryStore` is for development only: it forgets everything on restart. 🚫 production
@@ -14,10 +15,10 @@
 
 ```ts
 interface EsadadStore {
-  logTransaction(entry)                 // every request and response → EsadadTransactionsLogs
-  logPayment(entry)                     // every payment received     → EsadadPaymentsLogs (posted = false)
-  isPaymentPosted(joebppsTrx, guid)     // "did we already post this payment?"
-  markPaymentPosted(joebppsTrx, guid)   // "we posted it" → latest row = true
+  logTransaction(entry); // every request and response → EsadadTransactionsLogs
+  logPayment(entry); // every payment received     → EsadadPaymentsLogs (posted = false)
+  isPaymentPosted(joebppsTrx, guid); // "did we already post this payment?"
+  markPaymentPosted(joebppsTrx, guid); // "we posted it" → latest row = true
 }
 ```
 
@@ -27,10 +28,10 @@ They can be `async`.
 
 ## 🚀 Ready-made stores (copy into your project)
 
-| Database | Tables | Store class | Package |
-|---|---|---|---|
+| Database   | Tables                                                         | Store class                                              | Package       |
+| ---------- | -------------------------------------------------------------- | -------------------------------------------------------- | ------------- |
 | SQL Server | [`schema.sqlserver.sql`](../examples/sql/schema.sqlserver.sql) | [`sqlServerStore.ts`](../examples/sql/sqlServerStore.ts) | `npm i mssql` |
-| PostgreSQL | [`schema.postgres.sql`](../examples/sql/schema.postgres.sql) | [`postgresStore.ts`](../examples/sql/postgresStore.ts) | `npm i pg` |
+| PostgreSQL | [`schema.postgres.sql`](../examples/sql/schema.postgres.sql)   | [`postgresStore.ts`](../examples/sql/postgresStore.ts)   | `npm i pg`    |
 
 ### Steps
 
@@ -62,25 +63,25 @@ const esadad = new EsadadService({ …, store: new SqlServerStore(pool) });
 
 **EsadadTransactionsLogs**: one row per request and per response:
 
-| Column | Example |
-|---|---|
-| TransactionType | `Request` / `Response` |
-| Api | `PrepaidValidation` |
-| Guid | `a1b2…` |
-| BillingNumber / BillNumber | `0599123456` / `B-1` |
-| ServiceType / Currency | `MOBILE_TOPUP` / `ILS` |
-| ResultCode | `0` (responses only) |
-| XmlElement | the full XML |
-| InsertDateTime | now |
+| Column                     | Example                 |
+| -------------------------- | ----------------------- |
+| TransactionType            | `Request` / `Response`  |
+| Api                        | `PrepaidValidation`     |
+| Guid                       | `a1b2…`                 |
+| BillingNumber / BillNumber | `0599123456` / `B-1`    |
+| ServiceType / Currency     | `MOBILE_TOPUP` / `ILS` |
+| ResultCode                 | `0` (responses only)    |
+| XmlElement                 | the full XML            |
+| InsertDateTime             | now                     |
 
 **EsadadPaymentsLogs**: one row per payment received:
 
-| Column | Example |
-|---|---|
-| Guid, JoebppsTrx | `a1b2…`, `9001` |
-| BillingNumber, BillNumber, ServiceType, Currency | … |
-| PaidAmount | `20.000` |
-| IsPaymentPosted | `false` → `true` after posting |
+| Column                                           | Example                        |
+| ------------------------------------------------ | ------------------------------ |
+| Guid, JoebppsTrx                                 | `a1b2…`, `9001`                |
+| BillingNumber, BillNumber, ServiceType, Currency | …                              |
+| PaidAmount                                       | `20.000`                       |
+| IsPaymentPosted                                  | `false` → `true` after posting |
 
 ---
 
@@ -117,8 +118,12 @@ Implement the 4 functions:
 import type { EsadadStore } from 'e-sadad-xml';
 
 export const myStore: EsadadStore = {
-  async logTransaction(e) { await db.transactionLogs.insert(e); },
-  async logPayment(e) { await db.paymentLogs.insert(e); },
+  async logTransaction(e) {
+    await db.transactionLogs.insert(e);
+  },
+  async logPayment(e) {
+    await db.paymentLogs.insert(e);
+  },
   async isPaymentPosted(joebppsTrx) {
     return (await db.paymentLogs.count({ joebppsTrx, isPaymentPosted: true })) > 0;
   },

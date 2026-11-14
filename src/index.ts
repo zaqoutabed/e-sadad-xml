@@ -25,6 +25,16 @@ export { loadPemPrivateKey, loadPfxPrivateKey, loadPublicKey } from './crypto/ke
 export { signMessage, verifyMessage, type VerifyResult } from './crypto/message';
 export { canonicalMsgBody, canonicalize } from './xml/c14n';
 
+// Configuration from config tables / config file (integration document format)
+export {
+  configFromTables,
+  loadConfigFile,
+  type ConfigRow,
+  type ConfigTables,
+  type ConfigTablesOptions,
+  type TablesConfig,
+} from './config/tables';
+
 // Storage
 export { InMemoryStore } from './storage/memory';
 

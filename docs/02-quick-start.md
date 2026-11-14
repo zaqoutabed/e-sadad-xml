@@ -38,12 +38,12 @@ bash node_modules/e-sadad-xml/examples/dev-keys.sh
 
 You now have a `dev-keys/` folder:
 
-| File | Role |
-|---|---|
-| `esadad-dev.cer` | Pretends to be E-SADAD's certificate. **Your server** uses it to check requests. |
-| `esadad-dev.key` | Pretends to be E-SADAD's private key. **The simulator** uses it to sign requests. |
+| File             | Role                                                                                 |
+| ---------------- | ------------------------------------------------------------------------------------ |
+| `esadad-dev.cer` | Pretends to be E-SADAD's certificate. **Your server** uses it to check requests.     |
+| `esadad-dev.key` | Pretends to be E-SADAD's private key. **The simulator** uses it to sign requests.    |
 | `biller-dev.pfx` | **Your** private key (password `dev-password`). Your server signs responses with it. |
-| `biller-dev.cer` | Your certificate. The simulator uses it to check your responses. |
+| `biller-dev.cer` | Your certificate. The simulator uses it to check your responses.                     |
 
 > ⚠️ Add `dev-keys/` to `.gitignore`. **Never commit keys.**
 

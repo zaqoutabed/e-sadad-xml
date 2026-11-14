@@ -33,7 +33,9 @@ export const kmsSigner: MessageSigner = {
 // Use it: pass `signer` instead of `certificates`.
 export const esadad = new EsadadService({
   biller: { code: 999 },
-  services: [{ serviceType: 'MOBILE_TOPUP', paymentType: 'PrePaid', currency: 'ILS', bankCode: 99, iban: 'PS00XXXX000000000000000000000' }],
+  services: [
+    { serviceType: 'MOBILE_TOPUP', paymentType: 'PrePaid', currency: 'ILS', bankCode: 99, iban: 'PS00XXXX000000000000000000000' },
+  ],
   signer: envSigner,
   adapter: { validatePrepaid: async () => ({ valid: true }), postPayment: async () => undefined },
   store: new InMemoryStore(),

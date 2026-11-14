@@ -37,7 +37,15 @@ function createService() {
   const store = new InMemoryStore();
   const service = new EsadadService({
     biller: { code: 999 },
-    services: [{ serviceType: 'MOBILE_TOPUP', paymentType: 'PrePaid', currency: 'ILS', bankCode: 99, iban: 'PS00XXXX000000000000000000000' }],
+    services: [
+      {
+        serviceType: 'MOBILE_TOPUP',
+        paymentType: 'PrePaid',
+        currency: 'ILS',
+        bankCode: 99,
+        iban: 'PS00XXXX000000000000000000000',
+      },
+    ],
     certificates: {
       esadadCertificate: { path: join(keysDir, 'esadad-dev.cer') },
       billerPfx: { data: readFileSync(join(keysDir, 'biller-dev.pfx')), password: 'dev-password' },

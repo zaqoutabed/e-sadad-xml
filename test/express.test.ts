@@ -1,22 +1,31 @@
 import express from 'express';
+import express4 from 'express4';
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 import { createEsadadRouter } from '../src/adapters/express';
 import { requestAvailability } from '../src';
 import { createService, esadadRequest, paymentBody, paymentTrx, prepaidBody } from './helpers';
 
-function createApp() {
+type ExpressFactory = () => ReturnType<typeof express>;
+
+function createApp(createExpress: ExpressFactory) {
   const { service } = createService(
     { validatePrepaid: () => ({ valid: true }), postPayment: () => undefined },
     { availabilityToken: 'tok' },
   );
-  const app = express();
+  const app = createExpress();
   app.use('/api/v1/esadad', createEsadadRouter(service, { bodyLimit: '10kb' }));
   return app;
 }
 
-describe('Express adapter', () => {
-  const app = createApp();
+// The router must work with both supported Express major versions.
+const versions: Array<[string, ExpressFactory]> = [
+  ['Express 5', () => express()],
+  ['Express 4', () => express4() as unknown as ReturnType<typeof express>],
+];
+
+describe.each(versions)('Express adapter (%s)', (_name, createExpress) => {
+  const app = createApp(createExpress);
 
   it('POST /prepaid/PrepaidValidation returns XML', async () => {
     const body = await esadadRequest('ex-1', 'BILRPREPADVALRQ', prepaidBody());
@@ -44,13 +53,19 @@ describe('Express adapter', () => {
   });
 
   it('answers 413 without details for oversized bodies', async () => {
-    const res = await request(app).post('/api/v1/esadad/BillPull?guid=g').type('xml').send('<a>' + 'x'.repeat(20_000) + '</a>');
+    const res = await request(app)
+      .post('/api/v1/esadad/BillPull?guid=g')
+      .type('xml')
+      .send('<a>' + 'x'.repeat(20_000) + '</a>');
     expect(res.status).toBe(413);
     expect(res.text).toBe('Payload Too Large');
   });
 
   it('answers 415 without details for an unsupported charset', async () => {
-    const res = await request(app).post('/api/v1/esadad/BillPull?guid=g').set('Content-Type', 'text/xml; charset=klingon').send('<a/>');
+    const res = await request(app)
+      .post('/api/v1/esadad/BillPull?guid=g')
+      .set('Content-Type', 'text/xml; charset=klingon')
+      .send('<a/>');
     expect(res.status).toBe(415);
     expect(res.text).toBe('Unsupported Media Type');
   });
@@ -66,9 +81,17 @@ describe('Express adapter', () => {
     const server = app.listen(0);
     try {
       const { port } = server.address() as { port: number };
-      const ok = await requestAvailability({ baseUrl: `http://127.0.0.1:${port}`, path: '/api/v1/esadad/availability', token: 'tok' });
+      const ok = await requestAvailability({
+        baseUrl: `http://127.0.0.1:${port}`,
+        path: '/api/v1/esadad/availability',
+        token: 'tok',
+      });
       expect(ok.status).toBe('success');
-      const bad = await requestAvailability({ baseUrl: `http://127.0.0.1:${port}`, path: '/api/v1/esadad/availability', token: 'x' });
+      const bad = await requestAvailability({
+        baseUrl: `http://127.0.0.1:${port}`,
+        path: '/api/v1/esadad/availability',
+        token: 'x',
+      });
       expect(bad).toMatchObject({ status: 'error', error_code: 401 });
       const down = await requestAvailability({ baseUrl: 'http://127.0.0.1:1', token: 'x', timeoutMs: 2000 });
       expect(down.status).toBe('error');

@@ -3,7 +3,16 @@ const assert = require('node:assert');
 const lib = require('../dist/index.js');
 const { createEsadadRouter } = require('../dist/express.js');
 
-for (const name of ['EsadadService', 'EsadadError', 'InMemoryStore', 'signMessage', 'verifyMessage', 'normalizeMobileNumber', 'formatAmount', 'requestAvailability']) {
+for (const name of [
+  'EsadadService',
+  'EsadadError',
+  'InMemoryStore',
+  'signMessage',
+  'verifyMessage',
+  'normalizeMobileNumber',
+  'formatAmount',
+  'requestAvailability',
+]) {
   assert.ok(lib[name], `missing export ${name}`);
 }
 assert.strictEqual(typeof createEsadadRouter, 'function');

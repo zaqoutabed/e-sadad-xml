@@ -13,7 +13,18 @@ export class PostgresStore implements EsadadStore {
       `INSERT INTO esadad_transactions_logs
          (transaction_type, api, guid, billing_number, bill_number, service_type, currency, result_code, xml_element, inserted_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-      [e.transactionType, e.api, e.guid, e.billingNo ?? null, e.billNo ?? null, e.serviceType ?? null, e.currency ?? null, e.resultCode ?? null, e.xml, e.createdAt],
+      [
+        e.transactionType,
+        e.api,
+        e.guid,
+        e.billingNo ?? null,
+        e.billNo ?? null,
+        e.serviceType ?? null,
+        e.currency ?? null,
+        e.resultCode ?? null,
+        e.xml,
+        e.createdAt,
+      ],
     );
   }
 

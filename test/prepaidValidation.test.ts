@@ -30,9 +30,9 @@ describe('PrepaidValidation', () => {
     expect(req.service.serviceType).toBe('MOBILE_TOPUP');
 
     // Request and response are both logged.
-    expect(store.transactions.map((t) => [t.transactionType, t.api, t.guid, t.billingNo])).toEqual([
-      ['Request', 'PrepaidValidation', 'guid-1', '970599123456'],
-      ['Response', 'PrepaidValidation', 'guid-1', '970599123456'],
+    expect(store.transactions.map((t) => [t.transactionType, t.api, t.guid, t.billingNo, t.serviceType, t.currency])).toEqual([
+      ['Request', 'PrepaidValidation', 'guid-1', '970599123456', 'MOBILE_TOPUP', 'ILS'],
+      ['Response', 'PrepaidValidation', 'guid-1', '970599123456', 'MOBILE_TOPUP', 'ILS'],
     ]);
   });
 

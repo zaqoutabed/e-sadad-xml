@@ -83,6 +83,8 @@ export interface EsadadConfig {
    * Defaults to trimming whitespace.
    */
   normalizeBillingNo?: (billingNo: string, serviceType: string) => string | null | undefined;
+  /** Background callbacks (SMS, e-mail, webhooks, metrics). They never delay or change the response. */
+  hooks?: EsadadHooks;
   /** Maximum request body size in bytes. Defaults to 512 KB. Larger requests get INVALID_REQUEST. */
   maxBodyBytes?: number;
   /** Override the default result codes (for example, if E-SADAD assigns different numbers). */
@@ -94,6 +96,32 @@ export interface EsadadConfig {
   /** Extra health check used by `/availability`. Throw or return `false` to report the service as unavailable. */
   healthCheck?: () => boolean | void | Promise<boolean | void>;
   logger?: Logger;
+}
+
+/** Data passed to `hooks.onRequestCompleted`. */
+export interface RequestCompletedEvent {
+  api: ApiName;
+  guid: string;
+  /** Header-level result sent to E-SADAD. */
+  result: ResultCode;
+  /** Time from receiving the request to having the signed response, in milliseconds. */
+  durationMs: number;
+  requestXml: string;
+  responseXml: string;
+}
+
+/**
+ * Callbacks run in the background after the response is ready. They never
+ * delay or change what E-SADAD receives; errors are sent to `logger.error`.
+ */
+export interface EsadadHooks {
+  /**
+   * A payment was posted to your billing system. Not called for retries of an
+   * already-posted payment. Use it for SMS or e-mail confirmations.
+   */
+  onPaymentPosted?(transaction: PaymentTransaction, ctx: HandlerContext): void | Promise<void>;
+  /** Any XML request was answered (success or error). Use it for metrics and alerts. */
+  onRequestCompleted?(event: RequestCompletedEvent): void | Promise<void>;
 }
 
 // ---------------------------------------------------------------------------
@@ -220,9 +248,7 @@ export interface BillRecord {
   subPayments?: SubPayment[];
 }
 
-export type BillPullResult =
-  | { found: false; result?: ResultInput }
-  | { found: true; bills: BillRecord[] };
+export type BillPullResult = { found: false; result?: ResultInput } | { found: true; bills: BillRecord[] };
 
 export type PrepaidValidationResult =
   | {

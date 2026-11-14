@@ -1,0 +1,26 @@
+{
+  "biller": { "BillerCode": "999", "BillerName": "the app" },
+  "services": [
+    {
+      "ServiceTypeCode": "MOBILE_TOPUP",
+      "ServiceNameArabic": "شحن رصيد - بالشيكل",
+      "ServiceNameEnglish": "Mobile TopUp - ILS",
+      "PaymentType": "PrePaid",
+      "Currency": "ILS",
+      "BankCode": 99,
+      "IBAN": "PS00XXXX000000000000000000000",
+      "PartialPayment": false,
+      "LowerValue": 1,
+      "UpperValue": 1000
+    }
+  ],
+  "certificates": [
+    { "CertificateOwner": "Esadad", "CertificateType": "Public", "CertificatePath": "../../dev-keys/esadad-dev.cer" },
+    {
+      "CertificateOwner": "the app",
+      "CertificateType": "Private",
+      "CertificatePath": "../../dev-keys/biller-dev.pfx",
+      "CertificatePassword": "env:BILLER_PFX_PASSWORD"
+    }
+  ]
+}

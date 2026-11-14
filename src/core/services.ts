@@ -9,7 +9,8 @@ function validateService(s: ServiceConfig): void {
   if (s.paymentType !== 'PostPaid' && s.paymentType !== 'PrePaid') {
     throw new EsadadConfigError(`${where}: paymentType must be "PostPaid" or "PrePaid"`);
   }
-  if (!s.currency || !isSupportedCurrency(s.currency)) throw new EsadadConfigError(`${where}: unsupported currency "${s.currency}"`);
+  if (!s.currency || !isSupportedCurrency(s.currency))
+    throw new EsadadConfigError(`${where}: unsupported currency "${s.currency}"`);
   if (s.bankCode === undefined || s.bankCode === '') throw new EsadadConfigError(`${where}: bankCode is required`);
   if (!s.iban) throw new EsadadConfigError(`${where}: iban is required`);
   if (s.lowerValue !== undefined && s.upperValue !== undefined && s.lowerValue > s.upperValue) {

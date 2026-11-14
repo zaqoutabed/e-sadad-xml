@@ -3,6 +3,7 @@
 ⏱ 3 min · 🎯 You'll learn: who calls whom, and what you actually have to build.
 
 > **TL;DR**
+>
 > - E-SADAD **calls your server**. You don't call E-SADAD.
 > - There are **3 XML calls** plus 1 health check.
 > - You answer **2 questions** in your code. The library handles everything else.
@@ -33,12 +34,12 @@ sequenceDiagram
 
 ## 📞 The 4 calls E-SADAD makes
 
-| # | Call | When | Your code answers |
-|---|---|---|---|
-| 1 | **PrepaidValidation** | Before a **prepaid** payment, such as a top-up | "Does this customer exist? Is the amount OK?" |
-| 2 | **BillPull** | Before a **postpaid** payment (bills) | "What bills does this customer have?" |
-| 3 | **ReceivePaymentNotification** | **After** the customer paid | "Post this payment." |
-| 4 | **Availability** | Any time (health check) | Nothing; the library answers. |
+| #   | Call                           | When                                           | Your code answers                             |
+| --- | ------------------------------ | ---------------------------------------------- | --------------------------------------------- |
+| 1   | **PrepaidValidation**          | Before a **prepaid** payment, such as a top-up | "Does this customer exist? Is the amount OK?" |
+| 2   | **BillPull**                   | Before a **postpaid** payment (bills)          | "What bills does this customer have?"         |
+| 3   | **ReceivePaymentNotification** | **After** the customer paid                    | "Post this payment."                          |
+| 4   | **Availability**               | Any time (health check)                        | Nothing; the library answers.                 |
 
 💡 **Prepaid only** (like the app top-ups)? You need **1 + 3**.
 💡 **Bills only**? You need **2 + 3**.

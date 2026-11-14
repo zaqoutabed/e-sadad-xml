@@ -42,12 +42,12 @@ If anything fails in steps 1–5, E-SADAD still gets a **signed error response**
 
 ## 1️⃣ PrepaidValidation
 
-| | |
-|---|---|
-| **Route** | `POST /prepaid/PrepaidValidation?guid=…` |
-| **Types** | `BILRPREPADVALRQ` → `BILRPREPADVALRS` |
-| **Adapter** | `validatePrepaid(request)` |
-| **Service** | must be `PrePaid` |
+|             |                                          |
+| ----------- | ---------------------------------------- |
+| **Route**   | `POST /prepaid/PrepaidValidation?guid=…` |
+| **Types**   | `BILRPREPADVALRQ` → `BILRPREPADVALRS`    |
+| **Adapter** | `validatePrepaid(request)`               |
+| **Service** | must be `PrePaid`                        |
 
 ### Request (from E-SADAD)
 
@@ -98,12 +98,12 @@ Same shape, with `<Result><ErrorCode>408</ErrorCode><ErrorDesc>Invalid Billing N
 
 ## 2️⃣ BillPull
 
-| | |
-|---|---|
-| **Route** | `POST /BillPull?guid=…` |
-| **Types** | `BILPULRQ` → `BILPULRS` |
-| **Adapter** | `getBills(request)` |
-| **Service** | must be `PostPaid` |
+|             |                         |
+| ----------- | ----------------------- |
+| **Route**   | `POST /BillPull?guid=…` |
+| **Types**   | `BILPULRQ` → `BILPULRS` |
+| **Adapter** | `getBills(request)`     |
+| **Service** | must be `PostPaid`      |
 
 > ⚠️ E-SADAD's reference didn't include BillPull, so this layout follows the standard MFEP format. Confirm it with E-SADAD. It lives in one file (`src/messages/billPull.ts`).
 
@@ -157,12 +157,12 @@ Same shape, with `<Result><ErrorCode>408</ErrorCode><ErrorDesc>Invalid Billing N
 
 ## 3️⃣ ReceivePaymentNotification
 
-| | |
-|---|---|
-| **Route** | `POST /Payment/ReceivePaymentNotification?guid=…` |
-| **Types** | `BLRPMTNTFRQ` → `BLRPMTNTFRS` |
-| **Adapter** | `postPayment(trx)`, once per transaction |
-| **Service** | any configured service |
+|             |                                                   |
+| ----------- | ------------------------------------------------- |
+| **Route**   | `POST /Payment/ReceivePaymentNotification?guid=…` |
+| **Types**   | `BLRPMTNTFRQ` → `BLRPMTNTFRS`                     |
+| **Adapter** | `postPayment(trx)`, once per transaction          |
+| **Service** | any configured service                            |
 
 ### Request
 
@@ -226,21 +226,25 @@ One `TrxInf` per transaction, each with its **own** result:
 
 ## 4️⃣ Availability
 
-| | |
-|---|---|
-| **Route** | `GET /availability?token=…` |
-| **Format** | JSON |
-| **Needs** | `availabilityToken` in config |
+|            |                               |
+| ---------- | ----------------------------- |
+| **Route**  | `GET /availability?token=…`   |
+| **Format** | JSON                          |
+| **Needs**  | `availabilityToken` in config |
 
 ```json
-{ "status": "success", "availability": { "response_time": 3, "status_code": 200, "status_message": "OK" }, "checked_at": "2026-11-12T10:00:00.000Z" }
+{
+  "status": "success",
+  "availability": { "response_time": 3, "status_code": 200, "status_message": "OK" },
+  "checked_at": "2026-11-12T10:00:00.000Z"
+}
 ```
 
-| HTTP | When |
-|---|---|
-| 200 | Token OK and `healthCheck` passed |
-| 401 | Missing or wrong token |
-| 503 | No token configured, or `healthCheck` failed |
+| HTTP | When                                         |
+| ---- | -------------------------------------------- |
+| 200  | Token OK and `healthCheck` passed            |
+| 401  | Missing or wrong token                       |
+| 503  | No token configured, or `healthCheck` failed |
 
 Calling someone else's availability endpoint: [`examples/availability-monitor.ts`](../examples/availability-monitor.ts)
 
@@ -252,9 +256,9 @@ Calling someone else's availability endpoint: [`examples/availability-monitor.ts
 const out = await esadad.prepaidValidation({ body: rawXml, guid, username, password });
 //    esadad.billPull(...) · esadad.receivePaymentNotification(...) · esadad.handle('BillPull', ...)
 
-out.xml     // → send with HTTP 200, Content-Type: application/xml
-out.result  // header result, e.g. { code: 0, desc: 'Success', severity: 'Info' }
-out.guid
+out.xml; // → send with HTTP 200, Content-Type: application/xml
+out.result; // header result, e.g. { code: 0, desc: 'Success', severity: 'Info' }
+out.guid;
 ```
 
 Ready-made: [`examples/fastify.ts`](../examples/fastify.ts) · [`examples/without-express.ts`](../examples/without-express.ts)
