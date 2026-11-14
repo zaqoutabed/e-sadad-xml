@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+*.log
+.env
+.env.*
+
+# Certificates and keys must never be committed
+*.pfx
+*.p12
+*.key
+*.pem
+*.cer
+*.crt
