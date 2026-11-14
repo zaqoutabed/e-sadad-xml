@@ -36,11 +36,11 @@ All 3 can be `async`. Write only the ones you use.
 
 ### You return
 
-| Situation | Return |
-|---|---|
-| ✅ OK | `{ valid: true }` |
-| ❌ Customer not found | `{ valid: false }` → **408 Invalid Billing Number** |
-| ❌ Another reason | `{ valid: false, result: 'INVALID_AMOUNT' }` |
+| Situation                    | Return                                                  |
+| ---------------------------- | ------------------------------------------------------- |
+| ✅ OK                        | `{ valid: true }`                                       |
+| ❌ Customer not found        | `{ valid: false }` → **408 Invalid Billing Number**     |
+| ❌ Another reason            | `{ valid: false, result: 'INVALID_AMOUNT' }`            |
 | ✏️ Change the amount or code | `{ valid: true, dueAmount: 25, validationCode: 'NEW' }` |
 
 ### Example
@@ -75,11 +75,11 @@ async validatePrepaid(request) {
 
 ### You return
 
-| Situation | Return |
-|---|---|
-| ❌ Account not found | `{ found: false }` → **408** |
-| 🧾 Has bills | `{ found: true, bills: [ … ] }` |
-| 🆓 Nothing due | `{ found: true, bills: [{ dueAmount: 0 }] }` |
+| Situation            | Return                                       |
+| -------------------- | -------------------------------------------- |
+| ❌ Account not found | `{ found: false }` → **408**                 |
+| 🧾 Has bills         | `{ found: true, bills: [ … ] }`              |
+| 🆓 Nothing due       | `{ found: true, bills: [{ dueAmount: 0 }] }` |
 
 ### A bill
 
@@ -133,10 +133,10 @@ Only `dueAmount` is required:
 
 ### You return
 
-| Situation | Return |
-|---|---|
-| ✅ Posted | nothing (`undefined`) or `{ success: true }` |
-| ❌ Rejected | `{ success: false, result: 'INVALID_BILLING_NUMBER' }` |
+| Situation      | Return                                                 |
+| -------------- | ------------------------------------------------------ |
+| ✅ Posted      | nothing (`undefined`) or `{ success: true }`           |
+| ❌ Rejected    | `{ success: false, result: 'INVALID_BILLING_NUMBER' }` |
 | 💥 System down | **throw**: E-SADAD gets an error and **retries later** |
 
 ### 🛡️ Double payments: already handled
@@ -163,14 +163,20 @@ async postPayment(trx) {
 
 ---
 
+### 📣 Sending an SMS or e-mail after payment?
+
+Don't put it in `postPayment`: it would slow down E-SADAD's response, and a failed SMS could look like a failed payment. Use the **`onPaymentPosted` hook** instead. → [Hooks](03-configuration.md#hooks-sms-e-mail-metrics)
+
+---
+
 ## 🚦 Errors in the adapter: 3 options
 
-| You do | E-SADAD sees |
-|---|---|
-| `return { valid: false }` / `{ found: false }` | 408 Invalid Billing Number |
-| `throw new EsadadError('INVALID_AMOUNT')` | that code (7 by default) |
-| `throw new EsadadError({ code: 410, desc: 'Account Blocked', severity: 'Error' })` | exactly that |
-| `throw new Error('db timeout')` (any other error) | 500 General Error. **Your message is NOT sent** (it's logged). |
+| You do                                                                             | E-SADAD sees                                                   |
+| ---------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `return { valid: false }` / `{ found: false }`                                     | 408 Invalid Billing Number                                     |
+| `throw new EsadadError('INVALID_AMOUNT')`                                          | that code (7 by default)                                       |
+| `throw new EsadadError({ code: 410, desc: 'Account Blocked', severity: 'Error' })` | exactly that                                                   |
+| `throw new Error('db timeout')` (any other error)                                  | 500 General Error. **Your message is NOT sent** (it's logged). |
 
 More: [6. Errors and result codes](06-errors.md)
 

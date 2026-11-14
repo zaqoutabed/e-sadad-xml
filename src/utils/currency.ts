@@ -20,7 +20,7 @@ export function formatAmount(amount: number | string, currency: string): string 
   if (!Number.isFinite(value)) throw new RangeError(`Invalid amount: ${amount}`);
   const decimals = currencyDecimals(currency);
   const factor = 10 ** decimals;
-  const rounded = Math.sign(value) * Math.round(Math.abs(value) * factor + Number.EPSILON * factor) / factor;
+  const rounded = (Math.sign(value) * Math.round(Math.abs(value) * factor + Number.EPSILON * factor)) / factor;
   return rounded.toFixed(decimals);
 }
 

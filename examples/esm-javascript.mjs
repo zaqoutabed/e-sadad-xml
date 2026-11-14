@@ -13,7 +13,10 @@ const esadad = new EsadadService({
   ],
   certificates: {
     esadadCertificate: { path: process.env.ESADAD_CERT ?? 'dev-keys/esadad-dev.cer' },
-    billerPfx: { path: process.env.BILLER_PFX ?? 'dev-keys/biller-dev.pfx', password: process.env.BILLER_PFX_PASSWORD ?? 'dev-password' },
+    billerPfx: {
+      path: process.env.BILLER_PFX ?? 'dev-keys/biller-dev.pfx',
+      password: process.env.BILLER_PFX_PASSWORD ?? 'dev-password',
+    },
   },
   normalizeBillingNo: normalizeMobileNumber,
   adapter: {

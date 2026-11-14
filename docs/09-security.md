@@ -8,19 +8,19 @@
 
 ## ✅ Already handled by the library
 
-| Threat | Protection |
-|---|---|
-| 🎭 Fake requests | Every request's **signature is verified** before your code runs |
-| ✏️ Changed amounts | Any change to `MsgBody` breaks the signature → `2` |
-| 🔁 Replayed payments | Duplicates detected by the signed `JOEBPPSTrx` → never posted twice |
-| 🏃 Concurrent duplicates | Serialised per payment (plus the DB unique index across servers) |
-| 💣 XML attacks (XXE, "billion laughs") | `DOCTYPE` is rejected outright |
-| 🐘 Huge requests | Size limit (512 KB default) |
-| 💉 XML injection | Every value in a response is escaped |
-| 🔢 Weird amounts (`0x10`, `1e3`, `Infinity`) | Only plain decimals are accepted |
-| 🕵️ Leaking internals | Error details go to your logger, **never** to E-SADAD |
-| ⏱️ Timing attacks on secrets | Tokens and passwords compared in constant time |
-| 🧾 GUID tricks | Format checked; must match `MsgHeader/GUID` when both are sent |
+| Threat                                       | Protection                                                          |
+| -------------------------------------------- | ------------------------------------------------------------------- |
+| 🎭 Fake requests                             | Every request's **signature is verified** before your code runs     |
+| ✏️ Changed amounts                           | Any change to `MsgBody` breaks the signature → `2`                  |
+| 🔁 Replayed payments                         | Duplicates detected by the signed `JOEBPPSTrx` → never posted twice |
+| 🏃 Concurrent duplicates                     | Serialised per payment (plus the DB unique index across servers)    |
+| 💣 XML attacks (XXE, "billion laughs")       | `DOCTYPE` is rejected outright                                      |
+| 🐘 Huge requests                             | Size limit (512 KB default)                                         |
+| 💉 XML injection                             | Every value in a response is escaped                                |
+| 🔢 Weird amounts (`0x10`, `1e3`, `Infinity`) | Only plain decimals are accepted                                    |
+| 🕵️ Leaking internals                         | Error details go to your logger, **never** to E-SADAD               |
+| ⏱️ Timing attacks on secrets                 | Tokens and passwords compared in constant time                      |
+| 🧾 GUID tricks                               | Format checked; must match `MsgHeader/GUID` when both are sent      |
 
 ---
 

@@ -49,7 +49,12 @@ export function billRecordNode(bill: BillRecord, ctx: BillRecordContext): XmlNod
   return el(
     'BillRec',
     resultNode(ctx.success),
-    el('AcctInfo', leaf('BillingNo', bill.billingNo ?? ctx.billingNo), optLeaf('BillNo', bill.billNo), leaf('BillerCode', ctx.billerCode)),
+    el(
+      'AcctInfo',
+      leaf('BillingNo', bill.billingNo ?? ctx.billingNo),
+      optLeaf('BillNo', bill.billNo),
+      leaf('BillerCode', ctx.billerCode),
+    ),
     leaf('BillStatus', bill.billStatus ?? 'BillNew'),
     leaf('DueAmount', formatAmount(bill.dueAmount, currency)),
     optLeaf('IssueDate', toXmlDate(bill.issueDate)),

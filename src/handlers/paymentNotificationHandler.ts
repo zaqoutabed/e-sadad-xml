@@ -1,4 +1,5 @@
 import { ApiNames, MessageTypes, type ResultCode } from '../constants';
+import { runInBackground } from '../core/background';
 import { sameCurrency } from '../core/services';
 import { EsadadError } from '../errors';
 import {
@@ -30,7 +31,12 @@ export class PaymentNotificationHandler implements ApiHandler {
 
   describe(doc: XDocument): LogFields {
     const first = parsePaymentNotificationRequest(doc)[0];
-    return { billingNo: first?.billingNo, billNo: first?.billNo, serviceType: first?.serviceType, currency: first?.currency };
+    return {
+      billingNo: first?.billingNo,
+      billNo: first?.billNo,
+      serviceType: first?.serviceType,
+      currency: this.currencyOf(first),
+    };
   }
 
   errorBody(ctx: RequestContext, result: ResultCode): XmlNode {
@@ -48,7 +54,7 @@ export class PaymentNotificationHandler implements ApiHandler {
         billingNo: t.billingNo ?? '',
         billNo: t.billNo,
         serviceType: t.serviceType ?? '',
-        currency: t.currency,
+        currency: this.currencyOf(t),
         paidAmount: t.paidAmount ?? 0,
         isPaymentPosted: false,
         createdAt: new Date(),
@@ -66,6 +72,11 @@ export class PaymentNotificationHandler implements ApiHandler {
       results.push(trxResult(raw, await this.processTransaction(ctx, raw)));
     }
     return { result: this.deps.results.success, body: paymentNotificationBody(results) };
+  }
+
+  /** Currency from the request, or from the configured service when the request has none. */
+  private currencyOf(t: RawPaymentTransaction | undefined): string | undefined {
+    return t?.currency ?? this.deps.services.find(t?.serviceType)?.currency;
   }
 
   /** Validates and posts one transaction. Never throws: errors become that transaction's result. */
@@ -94,7 +105,19 @@ export class PaymentNotificationHandler implements ApiHandler {
     if (outcome && outcome.success === false) return results.resolve(outcome.result, 'GENERAL_ERROR');
 
     await store.markPaymentPosted(trx.joebppsTrx, ctx.guid);
+    this.notifyPosted(ctx, trx);
     return results.success;
+  }
+
+  /** Runs `hooks.onPaymentPosted` in the background (SMS, e-mail, ...). */
+  private notifyPosted(ctx: RequestContext, trx: PaymentTransaction): void {
+    const hook = this.deps.hooks.onPaymentPosted;
+    if (!hook) return;
+    runInBackground(
+      `[${ctx.api}] ${ctx.guid}: onPaymentPosted(${trx.joebppsTrx})`,
+      () => hook(trx, handlerContext(ctx)),
+      this.deps.logger,
+    );
   }
 
   /** Validates the raw transaction against the configuration and builds what the adapter receives. */
