@@ -20,7 +20,13 @@ interface Invoice {
   paid: boolean;
 }
 const accounts = new Map<string, { suspended: boolean; invoices: Invoice[] }>([
-  ['CUST-1001', { suspended: false, invoices: [{ id: 'INV-1', amount: 45.5, issued: new Date('2026-11-01'), due: new Date('2026-11-30'), paid: false }] }],
+  [
+    'CUST-1001',
+    {
+      suspended: false,
+      invoices: [{ id: 'INV-1', amount: 45.5, issued: new Date('2026-11-01'), due: new Date('2026-11-30'), paid: false }],
+    },
+  ],
   ['CUST-1002', { suspended: false, invoices: [] }],
   ['CUST-1003', { suspended: true, invoices: [] }],
 ]);
@@ -74,7 +80,10 @@ const esadad = new EsadadService({
   ],
   certificates: {
     esadadCertificate: { path: process.env.ESADAD_CERT ?? 'dev-keys/esadad-dev.cer' },
-    billerPfx: { path: process.env.BILLER_PFX ?? 'dev-keys/biller-dev.pfx', password: process.env.BILLER_PFX_PASSWORD ?? 'dev-password' },
+    billerPfx: {
+      path: process.env.BILLER_PFX ?? 'dev-keys/biller-dev.pfx',
+      password: process.env.BILLER_PFX_PASSWORD ?? 'dev-password',
+    },
   },
   adapter,
   store: new InMemoryStore(),

@@ -109,9 +109,9 @@ describe('request pipeline: header-level errors', () => {
     const { service } = createService(adapter, {
       signer: { sign: () => Promise.reject(new Error('HSM offline')), verify: () => true },
     });
-    await expect(service.prepaidValidation({ body: await esadadRequest('g', RQ, prepaidBody()), guid: 'g' })).rejects.toBeInstanceOf(
-      EsadadSigningError,
-    );
+    await expect(
+      service.prepaidValidation({ body: await esadadRequest('g', RQ, prepaidBody()), guid: 'g' }),
+    ).rejects.toBeInstanceOf(EsadadSigningError);
   });
 
   it('supports overriding result codes', async () => {
@@ -120,6 +120,27 @@ describe('request pipeline: header-level errors', () => {
     });
     const out = await service.prepaidValidation({ body: '<MFEP><MsgBody/></MFEP>', guid: 'g' });
     expect(out.result.code).toBe(99);
+  });
+});
+
+describe('service helpers', () => {
+  it('handle() dispatches by API name and rejects unknown names', async () => {
+    const { service } = createService(adapter);
+    const out = await service.handle('PrepaidValidation', { body: await esadadRequest('h', RQ, prepaidBody()), guid: 'h' });
+    expect(out.api).toBe('PrepaidValidation');
+    await expect(service.handle('Nope' as never, { body: '' })).rejects.toBeInstanceOf(EsadadConfigError);
+  });
+
+  it('getService() returns the service config', () => {
+    const { service } = createService(adapter);
+    expect(service.getService('TELC_Recharge')?.iban).toBe('PS49PALS045431072990993100000');
+    expect(service.getService('missing')).toBeUndefined();
+  });
+
+  it('answers GENERAL_ERROR when the adapter method for an API is missing', async () => {
+    const { service } = createService({});
+    const out = await service.prepaidValidation({ body: await esadadRequest('m', RQ, prepaidBody()), guid: 'm' });
+    expect(out.result.code).toBe(500);
   });
 });
 

@@ -29,7 +29,14 @@ describe('ReceivePaymentNotification', () => {
       subPayments: [{ amount: 20, bankCode: '8', accountNo: 'PS49PALS045431072990993100000' }],
     });
     expect(store.payments).toHaveLength(1);
-    expect(store.payments[0]).toMatchObject({ guid: 'pay-1', joebppsTrx: 'T-100', paidAmount: 20, isPaymentPosted: true });
+    expect(store.payments[0]).toMatchObject({
+      guid: 'pay-1',
+      joebppsTrx: 'T-100',
+      paidAmount: 20,
+      currency: 'ILS',
+      isPaymentPosted: true,
+    });
+    expect(store.transactions.map((t) => t.currency)).toEqual(['ILS', 'ILS']);
   });
 
   it('does not post again when E-SADAD retries', async () => {
@@ -91,15 +98,25 @@ describe('ReceivePaymentNotification', () => {
   });
 
   it('returns one result per transaction', async () => {
-    const postPayment = vi.fn((t: PaymentTransaction) => (t.joebppsTrx === 'B' ? { success: false as const, result: 'INVALID_BILLING_NUMBER' as const } : undefined));
+    const postPayment = vi.fn((t: PaymentTransaction) =>
+      t.joebppsTrx === 'B' ? { success: false as const, result: 'INVALID_BILLING_NUMBER' as const } : undefined,
+    );
     const { service } = createService({ postPayment });
     const body = await esadadRequest(
       'pay-6',
       RQ,
-      paymentBody(paymentTrx({ trx: 'A' }), paymentTrx({ trx: 'B' }), paymentTrx({ trx: 'C', currency: 'USD' }), paymentTrx({ trx: 'D', paid: '0' })),
+      paymentBody(
+        paymentTrx({ trx: 'A' }),
+        paymentTrx({ trx: 'B' }),
+        paymentTrx({ trx: 'C', currency: 'USD' }),
+        paymentTrx({ trx: 'D', paid: '0' }),
+      ),
     );
     const out = await service.receivePaymentNotification({ body, guid: 'pay-6' });
-    const codes = [...out.xml.matchAll(/<JOEBPPSTrx>(\w)<\/JOEBPPSTrx>.*?<ErrorCode>(\d+)<\/ErrorCode>/g)].map((m) => [m[1], m[2]]);
+    const codes = [...out.xml.matchAll(/<JOEBPPSTrx>(\w)<\/JOEBPPSTrx>.*?<ErrorCode>(\d+)<\/ErrorCode>/g)].map((m) => [
+      m[1],
+      m[2],
+    ]);
     expect(codes).toEqual([
       ['A', '0'],
       ['B', '408'],
@@ -111,7 +128,10 @@ describe('ReceivePaymentNotification', () => {
   it('answers an invalid signature with a payment-notification body (not a prepaid one)', async () => {
     const postPayment = vi.fn();
     const { service, store } = createService({ postPayment });
-    const body = (await esadadRequest('pay-7', RQ, paymentBody(paymentTrx({ trx: 'T-700' })))).replace('<PaidAmt>20.00', '<PaidAmt>99999.00');
+    const body = (await esadadRequest('pay-7', RQ, paymentBody(paymentTrx({ trx: 'T-700' })))).replace(
+      '<PaidAmt>20.00',
+      '<PaidAmt>99999.00',
+    );
     const out = await service.receivePaymentNotification({ body, guid: 'pay-7' });
 
     expect(out.result.code).toBe(2);

@@ -36,13 +36,13 @@ Send it to E-SADAD and ask them to compare with what they signed.
 
 Read the message. It names the problem. Common ones:
 
-| Message | Fix |
-|---|---|
+| Message                                    | Fix                                          |
+| ------------------------------------------ | -------------------------------------------- |
 | `Cannot open biller PFX (wrong password…)` | Wrong `password`, or the file isn't a `.pfx` |
-| `Cannot read E-SADAD certificate` | Wrong `path` |
-| `unsupported currency "NIS"` | Use `ILS` |
-| `Duplicate serviceType` | Two services with the same `serviceType` |
-| `Provide either certificates or signer` | Add `certificates` |
+| `Cannot read E-SADAD certificate`          | Wrong `path`                                 |
+| `unsupported currency "NIS"`               | Use `ILS`                                    |
+| `Duplicate serviceType`                    | Two services with the same `serviceType`     |
+| `Provide either certificates or signer`    | Add `certificates`                           |
 
 ---
 

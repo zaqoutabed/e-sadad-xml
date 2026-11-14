@@ -1,6 +1,12 @@
 import { ApiNames, MessageTypes, type ResultCode } from '../constants';
 import { EsadadError } from '../errors';
-import { billPullBody, billPullErrorBody, billRecordNode, parseBillPullRequest, type RawBillPullRequest } from '../messages/billPull';
+import {
+  billPullBody,
+  billPullErrorBody,
+  billRecordNode,
+  parseBillPullRequest,
+  type RawBillPullRequest,
+} from '../messages/billPull';
 import type { BillPullRequest } from '../types';
 import type { XmlNode } from '../xml/builder';
 import type { XDocument } from '../xml/parser';
@@ -21,7 +27,8 @@ export class BillPullHandler implements ApiHandler {
 
   describe(doc: XDocument): LogFields {
     const r = parseBillPullRequest(doc);
-    return { billingNo: r.billingNo, billNo: r.billNo, serviceType: r.serviceType };
+    const currency = this.deps.services.find(r.serviceType)?.currency;
+    return { billingNo: r.billingNo, billNo: r.billNo, serviceType: r.serviceType, currency };
   }
 
   errorBody(ctx: RequestContext, result: ResultCode): XmlNode {

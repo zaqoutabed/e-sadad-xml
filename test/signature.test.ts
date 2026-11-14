@@ -1,9 +1,11 @@
+import { X509Certificate, createPrivateKey } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { DOMParser } from '@xmldom/xmldom';
 import {
   CertificateSigner,
   EsadadConfigError,
   canonicalMsgBody,
+  loadPemPrivateKey,
   loadPfxPrivateKey,
   loadPublicKey,
   signData,
@@ -87,6 +89,19 @@ describe('signing', () => {
       reason: 'invalid-signature',
     });
     expect(await verifyMessage(xml, esadadVerifier)).toEqual({ valid: false, reason: 'missing-signature' });
+  });
+
+  it('loads DER certificates, bare public keys and DER private keys', () => {
+    const der = new X509Certificate(billerIdentity.certPem).raw;
+    const fromDer = loadPublicKey({ data: der });
+    const spkiPem = new X509Certificate(billerIdentity.certPem).publicKey.export({ type: 'spki', format: 'pem' });
+    const fromSpki = loadPublicKey({ data: spkiPem });
+    const pkcs8Der = createPrivateKey(billerIdentity.keyPem).export({ type: 'pkcs8', format: 'der' });
+    const priv = loadPemPrivateKey({ data: pkcs8Der });
+    const sig = signData('x', priv);
+    expect(verifyData('x', sig, fromDer)).toBe(true);
+    expect(verifyData('x', sig, fromSpki)).toBe(true);
+    expect(() => loadPemPrivateKey({ data: 'garbage' })).toThrow(EsadadConfigError);
   });
 
   it('reports configuration problems clearly', () => {

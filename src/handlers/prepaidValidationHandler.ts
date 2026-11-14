@@ -1,7 +1,11 @@
 import { ApiNames, MessageTypes, type ResultCode } from '../constants';
 import { sameCurrency } from '../core/services';
 import { EsadadError } from '../errors';
-import { parsePrepaidValidationRequest, prepaidValidationBody, type RawPrepaidValidationRequest } from '../messages/prepaidValidation';
+import {
+  parsePrepaidValidationRequest,
+  prepaidValidationBody,
+  type RawPrepaidValidationRequest,
+} from '../messages/prepaidValidation';
 import type { PrepaidValidationRequest, ServiceConfig, SubPayment } from '../types';
 import { isAmountInRange, parseAmount } from '../utils/currency';
 import type { XmlNode } from '../xml/builder';
@@ -21,7 +25,9 @@ export class PrepaidValidationHandler implements ApiHandler {
 
   describe(doc: XDocument): LogFields {
     const r = parsePrepaidValidationRequest(doc);
-    return { billingNo: r.billingNo, serviceType: r.serviceType, currency: r.currency };
+    // Requests rarely carry <Currency>: fall back to the configured service currency.
+    const currency = r.currency ?? this.deps.services.find(r.serviceType)?.currency;
+    return { billingNo: r.billingNo, serviceType: r.serviceType, currency };
   }
 
   errorBody(ctx: RequestContext, result: ResultCode): XmlNode {

@@ -96,7 +96,9 @@ export function esadadRequest(guid: string, requestType: string, msgBody: string
   return signMessage(xml, esadadSide);
 }
 
-export function prepaidBody(opts: { billingNo?: string; amount?: string; serviceType?: string; billerCode?: string; currency?: string } = {}) {
+export function prepaidBody(
+  opts: { billingNo?: string; amount?: string; serviceType?: string; billerCode?: string; currency?: string } = {},
+) {
   return `<MsgBody>
     <BillingInfo>
       <AcctInfo><BillingNo>${opts.billingNo ?? '0599123456'}</BillingNo><BillerCode>${opts.billerCode ?? '344'}</BillerCode></AcctInfo>

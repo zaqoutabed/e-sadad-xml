@@ -37,7 +37,15 @@ function createService() {
   const store = new InMemoryStore();
   const service = new EsadadService({
     biller: { code: 344 },
-    services: [{ serviceType: 'TELC_Recharge', paymentType: 'PrePaid', currency: 'ILS', bankCode: 8, iban: 'PS49PALS045431072990993100000' }],
+    services: [
+      {
+        serviceType: 'TELC_Recharge',
+        paymentType: 'PrePaid',
+        currency: 'ILS',
+        bankCode: 8,
+        iban: 'PS49PALS045431072990993100000',
+      },
+    ],
     certificates: {
       esadadCertificate: { path: join(keysDir, 'esadad-dev.cer') },
       billerPfx: { data: readFileSync(join(keysDir, 'biller-dev.pfx')), password: 'dev-password' },

@@ -3,6 +3,7 @@
 ⏱ 6 min · 🎯 You'll learn: 3 ways to test before E-SADAD ever connects.
 
 > **TL;DR**
+>
 > 1. 🎭 **Simulator:** pretend to be E-SADAD against your running server.
 > 2. 🧪 **Automated tests:** call the service directly in vitest/jest. No server needed.
 > 3. 🔍 **Manual:** sign a single request and `curl` it.
@@ -22,9 +23,9 @@ E-SADAD ◀──(signs with YOUR .pfx)─── YOU
 
 On your laptop, `dev-keys.sh` makes **both** sides:
 
-| Side | Signs with | Checks with |
-|---|---|---|
-| Your server | `biller-dev.pfx` | `esadad-dev.cer` |
+| Side            | Signs with       | Checks with      |
+| --------------- | ---------------- | ---------------- |
+| Your server     | `biller-dev.pfx` | `esadad-dev.cer` |
 | Pretend E-SADAD | `esadad-dev.key` | `biller-dev.cer` |
 
 So in "pretend E-SADAD" code, the roles look **swapped**. That's expected:
@@ -101,9 +102,14 @@ const esadad = new CertificateSigner({
   billerPrivateKey: { path: 'dev-keys/esadad-dev.key' },
   esadadCertificate: { path: 'dev-keys/biller-dev.cer' },
 });
-console.log(await signMessage(`<MFEP><MsgHeader><GUID>manual-1</GUID></MsgHeader>
+console.log(
+  await signMessage(
+    `<MFEP><MsgHeader><GUID>manual-1</GUID></MsgHeader>
   <MsgBody><BillingInfo><AcctInfo><BillingNo>0599123456</BillingNo></AcctInfo><DueAmt>10</DueAmt>
-  <ServiceTypeDetails><ServiceType>TELC_Recharge</ServiceType></ServiceTypeDetails></BillingInfo></MsgBody></MFEP>`, esadad));
+  <ServiceTypeDetails><ServiceType>TELC_Recharge</ServiceType></ServiceTypeDetails></BillingInfo></MsgBody></MFEP>`,
+    esadad,
+  ),
+);
 ```
 
 ```bash

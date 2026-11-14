@@ -60,6 +60,7 @@ export class EsadadService {
       verifySignature: config.verifySignature !== false,
       maxBodyBytes: config.maxBodyBytes ?? DEFAULT_MAX_BODY_BYTES,
       timestamp: config.timestamp ?? defaultTimestamp,
+      hooks: config.hooks ?? {},
     });
 
     const deps: HandlerDeps = {
@@ -70,6 +71,7 @@ export class EsadadService {
       results,
       logger: this.logger,
       locks: new KeyedLock(),
+      hooks: config.hooks ?? {},
     };
     this.handlers = {
       [ApiNames.BILL_PULL]: new BillPullHandler(deps),

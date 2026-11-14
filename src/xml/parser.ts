@@ -13,7 +13,7 @@ const ELEMENT_NODE = 1;
  * errors are raised as `EsadadError('INVALID_REQUEST')`.
  */
 export function parseXml(xml: string | Buffer): XDocument {
-  const source = (Buffer.isBuffer(xml) ? xml.toString('utf8') : xml).replace(/^﻿/, '').trim();
+  const source = (Buffer.isBuffer(xml) ? xml.toString('utf8') : xml).replace(/^\uFEFF/, '').trim();
   if (!source) throw new EsadadError('INVALID_REQUEST', 'Empty XML body');
   if (/<!DOCTYPE/i.test(source)) throw new EsadadError('INVALID_REQUEST', 'DOCTYPE is not allowed');
 
