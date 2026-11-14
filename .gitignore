@@ -12,3 +12,6 @@ coverage/
 *.pem
 *.cer
 *.crt
+
+# Local development keys (examples/dev-keys.sh)
+dev-keys/

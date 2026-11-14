@@ -13,6 +13,9 @@ It takes care of the E-SADAD protocol: XML parsing and building, `MsgBody` signa
 
 Written in TypeScript and shipped as **CommonJS and ES modules with type definitions**, so it works the same from JavaScript and TypeScript.
 
+> 📘 **New to the library? Start with the step-by-step guide: [`docs/README.md`](docs/README.md)** (quick start in 10 minutes, then one topic per page).
+> 🧩 **Runnable examples** for every feature: [`examples/README.md`](examples/README.md)
+
 ---
 
 ## Contents
@@ -442,7 +445,8 @@ src/
 └── utils/                    currency.ts, phone.ts, datetime.ts
 
 test/                         One test file per area; helpers.ts creates keys and signed requests
-examples/                     TypeScript, JavaScript, framework-free and SQL Server examples
+docs/                         User guide (one topic per page, start at docs/README.md)
+examples/                     Runnable examples: servers, frameworks, databases, testing, advanced
 scripts/smoke.*               Load the built package from CJS and ESM
 ```
 
