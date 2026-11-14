@@ -55,6 +55,10 @@ describe('signing', () => {
   const privateKey = loadPfxPrivateKey({ data: billerIdentity.pfx }, billerIdentity.password);
   const publicKey = loadPublicKey({ data: billerIdentity.certPem });
 
+  it('canonicalMsgBody also accepts an XML string', () => {
+    expect(canonicalMsgBody('<MFEP><MsgBody>\n  <A>1</A>\n</MsgBody></MFEP>')).toBe('<MsgBody><A>1</A></MsgBody>');
+  });
+
   it('signs over UTF-16LE with RSA-SHA256 and verifies', () => {
     const data = '<MsgBody><A>نص</A></MsgBody>';
     const sig = signData(data, privateKey);
