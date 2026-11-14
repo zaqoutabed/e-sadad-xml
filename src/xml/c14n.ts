@@ -1,5 +1,5 @@
 import type { XDocument, XElement, XNode } from './parser';
-import { findFirst } from './parser';
+import { findFirst, parseXml } from './parser';
 import { EsadadError } from '../errors';
 
 /**
@@ -125,9 +125,11 @@ export function canonicalize(element: XElement): string {
  * 2. remove whitespace between tags inside it and trim its content.
  *
  * The signature is then computed over this string encoded as UTF-16LE.
+ * Accepts an XML string or an already parsed document.
  */
-export function canonicalMsgBody(doc: XDocument | XElement): string {
-  const body = findFirst(doc as XNode, 'MsgBody');
+export function canonicalMsgBody(doc: string | XDocument | XElement): string {
+  const root = typeof doc === 'string' ? parseXml(doc) : doc;
+  const body = findFirst(root as XNode, 'MsgBody');
   if (!body) throw new EsadadError('INVALID_REQUEST', 'MsgBody element not found');
   return compactMsgBody(canonicalize(body));
 }
