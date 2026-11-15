@@ -1,5 +1,6 @@
 import { ApiNames, MessageTypes, type ResultCode } from '../constants';
 import { sameCurrency } from '../core/services';
+import { withTimeout } from '../core/timeout';
 import { EsadadError } from '../errors';
 import {
   parsePrepaidValidationRequest,
@@ -42,7 +43,11 @@ export class PrepaidValidationHandler implements ApiHandler {
     const raw = parsePrepaidValidationRequest(ctx.doc!);
     try {
       const request = this.buildRequest(ctx, raw);
-      const outcome = await adapter.validatePrepaid(request, handlerContext(ctx));
+      const outcome = await withTimeout(
+        adapter.validatePrepaid(request, handlerContext(ctx)),
+        this.deps.adapterTimeoutMs,
+        'adapter.validatePrepaid',
+      );
 
       if (!outcome?.valid) {
         const reason = outcome?.valid === false ? outcome.result : undefined;

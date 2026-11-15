@@ -5,6 +5,7 @@ import type { Credentials, EsadadHooks, EsadadStore, HandlerInput, HandlerOutput
 import { formatTimestamp } from '../utils/datetime';
 import { el, toXml } from '../xml/builder';
 import { canonicalMsgBody } from '../xml/c14n';
+import { decodeXmlBody } from '../xml/encoding';
 import { parseXml, text, type XDocument } from '../xml/parser';
 import { runInBackground } from './background';
 import type { ResultResolver } from './results';
@@ -96,7 +97,8 @@ export class RequestPipeline {
 
   private readInputs(handler: ApiHandler, input: HandlerInput): RequestContext {
     const body = input?.body;
-    const rawXml = Buffer.isBuffer(body) ? body.toString('utf8') : typeof body === 'string' ? body : '';
+    // Buffers may be UTF-8 or UTF-16: detect from the bytes.
+    const rawXml = Buffer.isBuffer(body) ? decodeXmlBody(body) : typeof body === 'string' ? body : '';
     const guid = typeof input?.guid === 'string' ? input.guid.trim() : '';
     return { api: handler.api, guid, rawXml, header: {} };
   }

@@ -5,6 +5,7 @@ import type { ApiName } from '../constants';
 import { ApiNames } from '../constants';
 import type { EsadadService } from '../service';
 import type { HandlerInput } from '../types';
+import { decodeXmlBody } from '../xml/encoding';
 
 export interface EsadadRouterPaths {
   billPull?: string | false;
@@ -41,7 +42,7 @@ const STATUS_TEXT: Record<number, string> = {
   500: 'Internal Server Error',
 };
 
-/** 4xx status set by body-parser (too large, bad charset, aborted request), or undefined. */
+/** 4xx status set by body-parser or decodeXmlBody (too large, bad charset, aborted request), or undefined. */
 function clientErrorStatus(err: unknown): number | undefined {
   const status = (err as { status?: unknown; statusCode?: unknown })?.status ?? (err as { statusCode?: unknown })?.statusCode;
   return typeof status === 'number' && status >= 400 && status < 500 ? status : undefined;
@@ -57,9 +58,15 @@ function queryValue(req: Request, ...names: string[]): string | undefined {
   return undefined;
 }
 
+/** `charset` parameter of the Content-Type header, if any. */
+function requestCharset(req: Request): string | undefined {
+  return /;\s*charset\s*=\s*"?([^";\s]+)/i.exec(req.headers['content-type'] ?? '')?.[1];
+}
+
 function toHandlerInput(req: Request): HandlerInput {
   return {
-    body: typeof req.body === 'string' || Buffer.isBuffer(req.body) ? req.body : '',
+    // Throws UnsupportedCharsetError (HTTP 415) for a charset that cannot be decoded.
+    body: Buffer.isBuffer(req.body) ? decodeXmlBody(req.body, requestCharset(req)) : '',
     guid: queryValue(req, 'guid', 'GUID', 'Guid'),
     username: queryValue(req, 'username', 'UserName', 'userName'),
     password: queryValue(req, 'password', 'Password'),
@@ -76,8 +83,9 @@ function toHandlerInput(req: Request): HandlerInput {
 export function createEsadadRouter(service: EsadadService, options: EsadadRouterOptions = {}): Router {
   const router = express.Router();
   const paths = { ...defaultPaths, ...(options.paths ?? {}) };
-  // Read every content type as text: E-SADAD may send text/xml, application/xml or none.
-  const readBody = express.text({ type: () => true, limit: options.bodyLimit ?? '512kb' });
+  // Read every content type as raw bytes: E-SADAD may send text/xml, application/xml or none,
+  // in UTF-8 or UTF-16. The bytes are decoded by decodeXmlBody.
+  const readBody = express.raw({ type: () => true, limit: options.bodyLimit ?? '512kb' });
 
   const xmlRoute = (api: ApiName) => async (req: Request, res: Response, next: NextFunction) => {
     try {

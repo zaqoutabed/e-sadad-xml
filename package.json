@@ -1,6 +1,6 @@
 {
   "name": "e-sadad-xml",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "E-SADAD biller integration library (BillPull, PrepaidValidation, ReceivePaymentNotification, Availability) for Node.js — usable from JavaScript and TypeScript.",
   "license": "UNLICENSED",
   "keywords": [

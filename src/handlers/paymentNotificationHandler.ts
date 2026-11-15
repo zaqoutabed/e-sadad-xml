@@ -27,6 +27,9 @@ export class PaymentNotificationHandler implements ApiHandler {
   readonly api = ApiNames.RECEIVE_PAYMENT_NOTIFICATION;
   readonly responseType = MessageTypes.PAYMENT_NOTIFICATION_RESPONSE;
 
+  /** Payments this process posted but could not flag in the store (see `recordPosted`). */
+  private readonly unrecorded = new Set<string>();
+
   constructor(private readonly deps: HandlerDeps) {}
 
   describe(doc: XDocument): LogFields {
@@ -96,7 +99,7 @@ export class PaymentNotificationHandler implements ApiHandler {
   /** Posts a payment unless it is already marked as posted (a retry). */
   private async postOnce(ctx: RequestContext, trx: PaymentTransaction): Promise<ResultCode> {
     const { store, adapter, results, logger } = this.deps;
-    if (await store.isPaymentPosted(trx.joebppsTrx, ctx.guid)) {
+    if (this.unrecorded.has(trx.joebppsTrx) || (await store.isPaymentPosted(trx.joebppsTrx, ctx.guid))) {
       logger.info?.(`[${ctx.api}] ${ctx.guid}: payment ${trx.joebppsTrx} already posted, answering retry`);
       return results.success;
     }
@@ -104,9 +107,43 @@ export class PaymentNotificationHandler implements ApiHandler {
     const outcome = await adapter.postPayment!(trx, handlerContext(ctx));
     if (outcome && outcome.success === false) return results.resolve(outcome.result, 'GENERAL_ERROR');
 
-    await store.markPaymentPosted(trx.joebppsTrx, ctx.guid);
+    await this.recordPosted(ctx, trx);
     this.notifyPosted(ctx, trx);
     return results.success;
+  }
+
+  /**
+   * Saves the "posted" flag. The payment is already in the billing system at
+   * this point, so a failure here must NOT be answered as an error: E-SADAD
+   * would retry and the payment would be posted twice. Instead: retry the
+   * write, and if it still fails, remember the payment in memory, log loudly
+   * and answer Success.
+   */
+  private async recordPosted(ctx: RequestContext, trx: PaymentTransaction): Promise<void> {
+    let lastError: unknown;
+    for (const delayMs of MARK_POSTED_RETRY_DELAYS_MS) {
+      if (delayMs > 0) await new Promise((resolve) => setTimeout(resolve, delayMs));
+      try {
+        await this.deps.store.markPaymentPosted(trx.joebppsTrx, ctx.guid);
+        return;
+      } catch (err) {
+        lastError = err;
+      }
+    }
+    this.rememberUnrecorded(trx.joebppsTrx);
+    this.deps.logger.error?.(
+      `[${ctx.api}] ${ctx.guid}: payment ${trx.joebppsTrx} WAS POSTED but could not be marked as posted in the payment log. ` +
+        'Mark it manually, otherwise a retry after a restart could post it again.',
+      lastError,
+    );
+  }
+
+  private rememberUnrecorded(joebppsTrx: string): void {
+    if (this.unrecorded.size >= MAX_UNRECORDED) {
+      const oldest = this.unrecorded.values().next().value;
+      if (oldest !== undefined) this.unrecorded.delete(oldest);
+    }
+    this.unrecorded.add(joebppsTrx);
   }
 
   /** Runs `hooks.onPaymentPosted` in the background (SMS, e-mail, ...). */
@@ -140,6 +177,10 @@ export class PaymentNotificationHandler implements ApiHandler {
     };
   }
 }
+
+/** Waits before each attempt to save the "posted" flag (first attempt is immediate). */
+const MARK_POSTED_RETRY_DELAYS_MS = [0, 50, 200];
+const MAX_UNRECORDED = 10_000;
 
 function trxResult(raw: RawPaymentTransaction, result: ResultCode): TrxResult {
   return { joebppsTrx: raw.joebppsTrx, processDate: raw.processDate, stmtDate: raw.stmtDate, result };

@@ -148,6 +148,8 @@ E-SADAD retries 9001        → postPayment() does NOT run → "Success" again
 
 - If `postPayment` **throws**, the payment is **not** marked posted, so the retry will post it. ✅
 - Concurrent duplicates are handled too.
+- If the payment **was posted** but saving the "posted" flag fails (database blip), the library retries the save, then still answers **Success** and logs an error. Answering with an error would make E-SADAD retry and post the payment twice.
+- ⏳ `adapterTimeoutMs` does **not** apply to `postPayment`: a payment that "timed out" could still finish and then be posted again on retry. Put your own timeout inside `postPayment` only if your billing system can safely cancel.
 - 💡 Extra safety: also store `joebppsTrx` with a **unique** constraint in your own database.
 
 ### Example

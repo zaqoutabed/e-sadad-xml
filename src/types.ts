@@ -83,6 +83,13 @@ export interface EsadadConfig {
    * Defaults to trimming whitespace.
    */
   normalizeBillingNo?: (billingNo: string, serviceType: string) => string | null | undefined;
+  /**
+   * Time limit in milliseconds for the read-only adapter calls (`getBills`,
+   * `validatePrepaid`). When exceeded, E-SADAD gets GENERAL_ERROR instead of
+   * waiting forever. Not applied to `postPayment`: a payment that timed out
+   * could still complete and be posted again on retry. Default: no limit.
+   */
+  adapterTimeoutMs?: number;
   /** Background callbacks (SMS, e-mail, webhooks, metrics). They never delay or change the response. */
   hooks?: EsadadHooks;
   /** Maximum request body size in bytes. Defaults to 512 KB. Larger requests get INVALID_REQUEST. */

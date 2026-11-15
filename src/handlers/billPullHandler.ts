@@ -1,4 +1,5 @@
 import { ApiNames, MessageTypes, type ResultCode } from '../constants';
+import { withTimeout } from '../core/timeout';
 import { EsadadError } from '../errors';
 import {
   billPullBody,
@@ -43,7 +44,11 @@ export class BillPullHandler implements ApiHandler {
     const raw = parseBillPullRequest(ctx.doc!);
     try {
       const request = this.buildRequest(ctx, raw);
-      const outcome = await adapter.getBills(request, handlerContext(ctx));
+      const outcome = await withTimeout(
+        adapter.getBills(request, handlerContext(ctx)),
+        this.deps.adapterTimeoutMs,
+        'adapter.getBills',
+      );
 
       if (!outcome?.found) {
         const reason = outcome?.found === false ? outcome.result : undefined;

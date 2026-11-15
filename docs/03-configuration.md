@@ -102,17 +102,18 @@ Only write the functions you need. Full guide: [4. The adapter](04-adapter.md).
 
 ## ⚪ Optional
 
-| Option               | Default                     | What it does                                                                                                                 |
-| -------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `normalizeBillingNo` | trim spaces                 | Cleans the billing number before your adapter sees it. Return `null` or `''` to reject it as **408 Invalid Billing Number**. |
-| `credentials`        | none                        | `{ username, password }`. E-SADAD must send `?username=…&password=…`.                                                        |
-| `availabilityToken`  | none (endpoint returns 503) | Token for `GET /availability?token=…`                                                                                        |
-| `healthCheck`        | always healthy              | `async () => boolean`, used by `/availability`. Return `false` (or throw) to report "down".                                  |
-| `resultCodes`        | see [Errors](06-errors.md)  | Change error numbers, for example once E-SADAD confirms theirs.                                                              |
-| `maxBodyBytes`       | 512 KB                      | Bigger requests are rejected.                                                                                                |
-| `timestamp`          | local `YYYY-MM-DDTHH:mm:ss` | Custom time for `TmStp`.                                                                                                     |
-| `verifySignature`    | `true`                      | ⚠️ **Never** set `false` in production.                                                                                      |
-| `hooks`              | none                        | Background callbacks after a payment or any request (SMS, e-mail, metrics). See [Hooks](#hooks-sms-e-mail-metrics).          |
+| Option               | Default                     | What it does                                                                                                                                                                                     |
+| -------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `normalizeBillingNo` | trim spaces                 | Cleans the billing number before your adapter sees it. Return `null` or `''` to reject it as **408 Invalid Billing Number**.                                                                     |
+| `credentials`        | none                        | `{ username, password }`. E-SADAD must send `?username=…&password=…`.                                                                                                                            |
+| `availabilityToken`  | none (endpoint returns 503) | Token for `GET /availability?token=…`                                                                                                                                                            |
+| `healthCheck`        | always healthy              | `async () => boolean`, used by `/availability`. Return `false` (or throw) to report "down".                                                                                                      |
+| `resultCodes`        | see [Errors](06-errors.md)  | Change error numbers, for example once E-SADAD confirms theirs.                                                                                                                                  |
+| `maxBodyBytes`       | 512 KB                      | Bigger requests are rejected.                                                                                                                                                                    |
+| `adapterTimeoutMs`   | no limit                    | Time limit for `validatePrepaid` and `getBills`. If your billing system hangs, E-SADAD gets **500** instead of waiting forever. Not applied to `postPayment` (see [the adapter](04-adapter.md)). |
+| `timestamp`          | local `YYYY-MM-DDTHH:mm:ss` | Custom time for `TmStp`.                                                                                                                                                                         |
+| `verifySignature`    | `true`                      | ⚠️ **Never** set `false` in production.                                                                                                                                                          |
+| `hooks`              | none                        | Background callbacks after a payment or any request (SMS, e-mail, metrics). See [Hooks](#hooks-sms-e-mail-metrics).                                                                              |
 
 ### `normalizeBillingNo` examples
 

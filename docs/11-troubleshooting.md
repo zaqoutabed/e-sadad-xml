@@ -89,6 +89,18 @@ This shouldn't happen. Check:
 - [ ] The unique index exists
 - [ ] Your own `postPayment` doesn't post again on its own retries
 
+## 🟡 Log says "payment … WAS POSTED but could not be marked as posted"
+
+Your billing system took the payment, but the store's `markPaymentPosted` kept failing. E-SADAD got **Success** (correct: the payment is posted).
+
+- [ ] Fix the store/database problem
+- [ ] Set `IsPaymentPosted = 1` on that `JoebppsTrx` row by hand
+- Until then, the running process remembers it; after a restart a retry could post it again. A **unique reference** on `joebppsTrx` in your own billing tables protects you here.
+
+## 🟡 `500` and the log says "adapter.… timed out"
+
+`validatePrepaid` or `getBills` took longer than `adapterTimeoutMs`. Speed up the lookup or raise the limit.
+
 ## 🟡 `/availability` returns 503
 
 - `availabilityToken` isn't set, or your `healthCheck` returned `false` or threw.

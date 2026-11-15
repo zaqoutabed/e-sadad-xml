@@ -24,6 +24,8 @@ export interface HandlerDeps {
   logger: Logger;
   locks: KeyedLock;
   hooks: EsadadHooks;
+  /** Time limit for read-only adapter calls; undefined means no limit. */
+  adapterTimeoutMs?: number;
 }
 
 /** Fields copied from a request into the transaction log. */

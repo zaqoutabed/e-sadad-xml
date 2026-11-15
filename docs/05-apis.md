@@ -19,6 +19,8 @@
 7. Log       response → store.logTransaction
 ```
 
+📦 The body can be **UTF-8 or UTF-16** (with or without a BOM); it's detected automatically.
+
 If anything fails in steps 1–5, E-SADAD still gets a **signed error response**.
 
 📐 All messages share this envelope:

@@ -123,6 +123,60 @@ describe('request pipeline: header-level errors', () => {
   });
 });
 
+describe('request body encodings', () => {
+  const utf16be = (text: string) => Buffer.from(text, 'utf16le').swap16();
+
+  it.each([
+    ['UTF-8 Buffer', (xml: string) => Buffer.from(xml, 'utf8')],
+    ['UTF-8 with BOM', (xml: string) => Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(xml, 'utf8')])],
+    ['UTF-16LE with BOM', (xml: string) => Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(xml, 'utf16le')])],
+    ['UTF-16LE without BOM', (xml: string) => Buffer.from(xml, 'utf16le')],
+    ['UTF-16BE with BOM', (xml: string) => Buffer.concat([Buffer.from([0xfe, 0xff]), utf16be(xml)])],
+    ['UTF-16BE without BOM', (xml: string) => utf16be(xml)],
+  ])('accepts %s (signature still verifies, Arabic text intact)', async (_name, encode) => {
+    const validatePrepaid = vi.fn(() => ({ valid: true as const }));
+    const { service, store } = createService({ validatePrepaid }, { normalizeBillingNo: (b) => b });
+    const xml = await esadadRequest('enc', RQ, prepaidBody({ billingNo: 'عميل-١' }));
+    const out = await service.prepaidValidation({ body: encode(xml), guid: 'enc' });
+    expect(out.result.code).toBe(0);
+    expect(out.xml).toContain('<BillingNo>عميل-١</BillingNo>');
+    expect(store.transactions[0]!.xml).toBe(xml);
+  });
+});
+
+describe('adapter timeout', () => {
+  const never = () => new Promise<never>(() => undefined);
+
+  it('answers GENERAL_ERROR when validatePrepaid hangs', async () => {
+    const logger = { error: vi.fn() };
+    const { service } = createService({ validatePrepaid: never }, { adapterTimeoutMs: 30, logger });
+    const out = await service.prepaidValidation({ body: await esadadRequest('to-1', RQ, prepaidBody()), guid: 'to-1' });
+    expect(out.result.code).toBe(500);
+    expect(await verifyMessage(out.xml, esadadSide)).toEqual({ valid: true });
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.stringContaining('unexpected error'),
+      expect.objectContaining({ message: 'adapter.validatePrepaid timed out after 30 ms' }),
+    );
+  });
+
+  it('answers GENERAL_ERROR when getBills hangs', async () => {
+    const { service } = createService({ getBills: never }, { adapterTimeoutMs: 30 });
+    const body = await esadadRequest(
+      'to-2',
+      'BILPULRQ',
+      '<MsgBody><AcctInfo><BillingNo>C1</BillingNo></AcctInfo><ServiceType>Invoices</ServiceType></MsgBody>',
+    );
+    expect((await service.billPull({ body, guid: 'to-2' })).result.code).toBe(500);
+  });
+
+  it('does not interfere with fast adapters, and rejects a bad setting', async () => {
+    const { service } = createService(adapter, { adapterTimeoutMs: 5000 });
+    const out = await service.prepaidValidation({ body: await esadadRequest('to-3', RQ, prepaidBody()), guid: 'to-3' });
+    expect(out.result.code).toBe(0);
+    expect(() => createService(adapter, { adapterTimeoutMs: -1 })).toThrow(EsadadConfigError);
+  });
+});
+
 describe('service helpers', () => {
   it('handle() dispatches by API name and rejects unknown names', async () => {
     const { service } = createService(adapter);
