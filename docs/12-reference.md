@@ -60,17 +60,18 @@ The XML methods never throw, except **`EsadadSigningError`** (the key can't sign
 
 ## 🔐 Signing
 
-| Export                                                                  | What                                                                      |
-| ----------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `new CertificateSigner(certificates)`                                   | `MessageSigner` from `.cer` + `.pfx`/`.pem`                               |
-| `signMessage(xml, signer)`                                              | Returns the XML with `MsgFooter/Security/Signature` filled in             |
-| `verifyMessage(xml, signer)`                                            | `{ valid: boolean, reason?: 'missing-signature' \| 'invalid-signature' }` |
-| `canonicalMsgBody(xmlOrDoc)`                                            | The exact string that gets signed (for debugging)                         |
-| `canonicalize(element)`                                                 | Canonical XML (C14N) of a DOM element                                     |
-| `signData(text, privateKey)` / `verifyData(text, signature, publicKey)` | Low-level RSA-SHA256 over UTF-16LE                                        |
-| `loadPublicKey(source)`                                                 | From `.cer`/`.crt` (PEM or DER) or a public key                           |
-| `loadPfxPrivateKey(source, password)`                                   | From `.pfx`/`.p12`                                                        |
-| `loadPemPrivateKey(source, passphrase?)`                                | From PEM (PKCS#1/PKCS#8) or DER                                           |
+| Export                                                                  | What                                                                                                                                |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `new CertificateSigner(certificates)`                                   | `MessageSigner` from `.cer` + `.pfx`/`.pem`                                                                                         |
+| `signMessage(xml, signer)`                                              | Returns the XML with `MsgFooter/Security/Signature` filled in                                                                       |
+| `verifyMessage(xml, signer)`                                            | `{ valid: boolean, reason?: 'missing-signature' \| 'invalid-signature' }`                                                           |
+| `canonicalMsgBody(xmlOrDoc)`                                            | The exact string that gets signed (for debugging)                                                                                   |
+| `canonicalize(element)`                                                 | Canonical XML (C14N) of a DOM element                                                                                               |
+| `decodeXmlBody(buffer, charset?)`                                       | Raw request bytes → string. Detects UTF-8/UTF-16 from the bytes; throws `UnsupportedCharsetError` (HTTP 415) for an unknown charset |
+| `signData(text, privateKey)` / `verifyData(text, signature, publicKey)` | Low-level RSA-SHA256 over UTF-16LE                                                                                                  |
+| `loadPublicKey(source)`                                                 | From `.cer`/`.crt` (PEM or DER) or a public key                                                                                     |
+| `loadPfxPrivateKey(source, password)`                                   | From `.pfx`/`.p12`                                                                                                                  |
+| `loadPemPrivateKey(source, passphrase?)`                                | From PEM (PKCS#1/PKCS#8) or DER                                                                                                     |
 
 `source` = `{ path: string }` or `{ data: string | Buffer }`.
 

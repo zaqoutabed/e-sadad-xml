@@ -2,6 +2,20 @@
 
 All notable changes to this project. The format follows [Keep a Changelog](https://keepachangelog.com/) and the project uses [semantic versioning](https://semver.org/).
 
+## [0.3.0] - 2026-11-15
+
+### Fixed
+
+- **Possible double payment:** when a payment was posted to the billing system but saving the "posted" flag failed, the library answered with an error, so E-SADAD retried and the payment could be posted twice. The flag write is now retried; if it still fails the library answers Success, logs an error, and remembers the payment for the life of the process.
+- **UTF-16 request bodies** (with or without a BOM) are now decoded correctly. The Express router reads raw bytes and honours the Content-Type charset; an unknown charset still answers 415.
+
+### Added
+
+- `adapterTimeoutMs`: time limit for the read-only adapter calls (`getBills`, `validatePrepaid`). Never applied to `postPayment`.
+- `decodeXmlBody()` and `UnsupportedCharsetError` exports.
+- Dependabot configuration for weekly dependency and GitHub Actions updates.
+- Tests: UTF-16 bodies, adapter timeouts, the availability client against misbehaving servers, and a new golden vector from the Python reference (processing instructions, redeclared namespaces).
+
 ## [0.2.0] - 2026-11-14
 
 ### Added

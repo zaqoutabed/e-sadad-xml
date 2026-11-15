@@ -24,6 +24,7 @@ export { CertificateSigner, signData, verifyData } from './crypto/signature';
 export { loadPemPrivateKey, loadPfxPrivateKey, loadPublicKey } from './crypto/keys';
 export { signMessage, verifyMessage, type VerifyResult } from './crypto/message';
 export { canonicalMsgBody, canonicalize } from './xml/c14n';
+export { decodeXmlBody, UnsupportedCharsetError } from './xml/encoding';
 
 // Configuration from config tables / config file (integration document format)
 export {

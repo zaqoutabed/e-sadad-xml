@@ -166,6 +166,7 @@ app.listen(3000);
 | `healthCheck`        |             | `() => boolean \| Promise<boolean>`, used by `/availability` (for example, ping your database).                                                                         |
 | `resultCodes`        |             | Override result codes, for example `{ INVALID_AMOUNT: { code: 13, desc: 'Invalid Amount', severity: 'Error' } }`.                                                       |
 | `maxBodyBytes`       |             | Maximum request size. Default 512 KB.                                                                                                                                   |
+| `adapterTimeoutMs`   |             | Time limit (ms) for the read-only adapter calls `getBills` and `validatePrepaid`. Default: no limit. Never applied to `postPayment`.                                    |
 | `verifySignature`    |             | Default `true`. Set `false` only for local development.                                                                                                                 |
 | `hooks`              |             | Background callbacks: `onPaymentPosted` (SMS, e-mail after a payment) and `onRequestCompleted` (metrics). They never delay or change the response.                      |
 | `timestamp`          |             | Custom `TmStp` generator. Default: local time `YYYY-MM-DDTHH:mm:ss`.                                                                                                    |

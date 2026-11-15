@@ -22,17 +22,17 @@ const esadad = new EsadadService({
 type EsadadQuery = { guid?: string; username?: string; password?: string };
 const app = Fastify({ logger: true, bodyLimit: 512 * 1024 });
 
-// Everything under /api/v1/esadad receives the body as a plain string,
+// Everything under /api/v1/esadad receives the body as raw bytes,
 // whatever Content-Type E-SADAD sends (text/xml, application/xml or none).
 app.register(
   async (esadadRoutes) => {
     esadadRoutes.removeAllContentTypeParsers();
-    esadadRoutes.addContentTypeParser('*', { parseAs: 'string' }, (_req, body, done) => done(null, body));
+    esadadRoutes.addContentTypeParser('*', { parseAs: 'buffer' }, (_req, body, done) => done(null, body));
 
     const xmlRoute = (api: ApiName) => async (req: FastifyRequest<{ Querystring: EsadadQuery }>, reply: FastifyReply) => {
       try {
         const { xml } = await esadad.handle(api, {
-          body: typeof req.body === 'string' ? req.body : '',
+          body: Buffer.isBuffer(req.body) ? req.body : '', // raw bytes: UTF-8 and UTF-16 are both detected
           guid: req.query.guid,
           username: req.query.username,
           password: req.query.password,
