@@ -43,6 +43,13 @@ const GOLDEN = [
     expected:
       '<MsgBody xmlns="urn:default" xmlns:b="urn:b" xmlns:ns="urn:x"><b:Item a="2" b:z="1">  text  </b:Item><Plain>x</Plain></MsgBody>',
   },
+  {
+    name: 'processing instructions and redeclared namespaces',
+    input:
+      '<MFEP xmlns:a="urn:a"><MsgBody xmlns:a="urn:a2">\n  <?audit  keep="1" ?>\n  <a:X xmlns:a="urn:a2" id="1">t</a:X>\n  <Y xmlns="urn:y"><Z xmlns=""/></Y>\n  <?empty?>\n</MsgBody></MFEP>',
+    expected:
+      '<MsgBody xmlns:a="urn:a2"><?audit keep="1" ?><a:X id="1">t</a:X><Y xmlns="urn:y"><Z xmlns=""></Z></Y><?empty?></MsgBody>',
+  },
 ];
 
 describe('canonical MsgBody (compatible with the Python reference)', () => {

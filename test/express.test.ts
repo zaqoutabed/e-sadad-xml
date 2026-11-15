@@ -61,6 +61,27 @@ describe.each(versions)('Express adapter (%s)', (_name, createExpress) => {
     expect(res.text).toBe('Payload Too Large');
   });
 
+  it('accepts a UTF-16 body sent without a charset', async () => {
+    const xml = await esadadRequest('ex-16', 'BILRPREPADVALRQ', prepaidBody());
+    const body = Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(xml, 'utf16le')]);
+    const res = await request(app)
+      .post('/api/v1/esadad/prepaid/PrepaidValidation?guid=ex-16')
+      .set('Content-Type', 'text/xml')
+      .send(body);
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('<BillingInfo><Result><ErrorCode>0</ErrorCode>');
+  });
+
+  it('honours a declared charset', async () => {
+    const xml = await esadadRequest('ex-17', 'BILRPREPADVALRQ', prepaidBody());
+    const res = await request(app)
+      .post('/api/v1/esadad/prepaid/PrepaidValidation?guid=ex-17')
+      .set('Content-Type', 'text/xml; charset="windows-1252"')
+      .send(Buffer.from(xml, 'latin1'));
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('<BillingInfo><Result><ErrorCode>0</ErrorCode>');
+  });
+
   it('answers 415 without details for an unsupported charset', async () => {
     const res = await request(app)
       .post('/api/v1/esadad/BillPull?guid=g')

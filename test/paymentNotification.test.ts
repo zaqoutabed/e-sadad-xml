@@ -97,6 +97,44 @@ describe('ReceivePaymentNotification', () => {
     expect(postPayment).toHaveBeenCalledTimes(2);
   });
 
+  it('answers Success when the payment was posted but the "posted" flag cannot be saved', async () => {
+    const postPayment = vi.fn();
+    const logger = { error: vi.fn() };
+    const { service, store } = createService({ postPayment }, { logger });
+    store.markPaymentPosted = () => {
+      throw new Error('db down');
+    };
+    const body = await esadadRequest('pay-8', RQ, paymentBody(paymentTrx({ trx: 'T-800' })));
+
+    // The money is in the billing system: an error here would make E-SADAD retry and double-post.
+    const first = await service.receivePaymentNotification({ body, guid: 'pay-8' });
+    expect(first.xml).toContain('<JOEBPPSTrx>T-800</JOEBPPSTrx>');
+    expect(first.xml).toContain('<Result><ErrorCode>0</ErrorCode>');
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.stringContaining('T-800 WAS POSTED but could not be marked'),
+      expect.any(Error),
+    );
+
+    // A retry reaching the same process is still recognised.
+    const retry = await service.receivePaymentNotification({ body, guid: 'pay-8' });
+    expect(retry.xml).toContain('<Result><ErrorCode>0</ErrorCode>');
+    expect(postPayment).toHaveBeenCalledTimes(1);
+  });
+
+  it('retries saving the "posted" flag after a short failure', async () => {
+    const postPayment = vi.fn();
+    const { service, store } = createService({ postPayment });
+    const realMark = store.markPaymentPosted.bind(store);
+    let failures = 1;
+    store.markPaymentPosted = (trx: string) => {
+      if (failures-- > 0) throw new Error('deadlock');
+      realMark(trx);
+    };
+    const body = await esadadRequest('pay-9', RQ, paymentBody(paymentTrx({ trx: 'T-900' })));
+    await service.receivePaymentNotification({ body, guid: 'pay-9' });
+    expect(store.isPaymentPosted('T-900')).toBe(true);
+  });
+
   it('returns one result per transaction', async () => {
     const postPayment = vi.fn((t: PaymentTransaction) =>
       t.joebppsTrx === 'B' ? { success: false as const, result: 'INVALID_BILLING_NUMBER' as const } : undefined,

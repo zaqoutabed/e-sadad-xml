@@ -72,6 +72,7 @@ export class EsadadService {
       logger: this.logger,
       locks: new KeyedLock(),
       hooks: config.hooks ?? {},
+      adapterTimeoutMs: config.adapterTimeoutMs,
     };
     this.handlers = {
       [ApiNames.BILL_PULL]: new BillPullHandler(deps),
@@ -131,6 +132,9 @@ function assertBaseConfig(config: EsadadConfig): void {
   if (!config.adapter || typeof config.adapter !== 'object') throw new EsadadConfigError('adapter is required');
   if (config.credentials && (!config.credentials.username || !config.credentials.password)) {
     throw new EsadadConfigError('credentials.username and credentials.password are both required');
+  }
+  if (config.adapterTimeoutMs !== undefined && !(config.adapterTimeoutMs > 0)) {
+    throw new EsadadConfigError('adapterTimeoutMs must be a positive number');
   }
   if (config.maxBodyBytes !== undefined && !(config.maxBodyBytes > 0)) {
     throw new EsadadConfigError('maxBodyBytes must be a positive number');
