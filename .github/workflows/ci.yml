@@ -16,7 +16,7 @@ jobs:
         # Node.js lines that receive security updates (see README "Node.js support policy").
         node: ['22.x', '24.x', '26.x']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
