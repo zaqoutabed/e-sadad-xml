@@ -3,6 +3,8 @@
 > **TL;DR:** E-SADAD sends your server XML requests. This library reads them, checks them, asks **your code** a simple question ("does this customer exist?", "post this payment"), and sends back a correct, signed answer.
 >
 > **You write about 20 lines. The library does the rest.**
+>
+> 🇵🇸 **بالعربية:** [دليل الاستخدام بالعربية](ar/README.md)
 
 ---
 

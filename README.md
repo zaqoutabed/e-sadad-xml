@@ -14,6 +14,7 @@ It takes care of the E-SADAD protocol: XML parsing and building, `MsgBody` signa
 Written in TypeScript and shipped as **CommonJS and ES modules with type definitions**, so it works the same from JavaScript and TypeScript.
 
 > 📘 **New to the library? Start with the step-by-step guide: [`docs/README.md`](docs/README.md)** (quick start in 10 minutes, then one topic per page).
+> 🌍 **بالعربية:** [`docs/ar/README.md`](docs/ar/README.md)
 > 🧩 **Runnable examples** for every feature: [`examples/README.md`](examples/README.md)
 
 ---
