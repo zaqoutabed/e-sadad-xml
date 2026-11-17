@@ -4,7 +4,7 @@
 >
 > **You write about 20 lines. The library does the rest.**
 >
-> 🇵🇸 **بالعربية:** [دليل الاستخدام بالعربية](ar/README.md)
+> 🇵🇸 **بالعربية:** [دليل الاستخدام بالعربية](ar/README.md) · [نسخة PDF](ar/e-sadad-xml-guide-ar.pdf)
 
 ---
 
