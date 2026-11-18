@@ -23,5 +23,5 @@ async function checkOnce(): Promise<void> {
   }
 }
 
-await checkOnce();
-setInterval(checkOnce, 60_000);
+void checkOnce(); // never throws: requestAvailability reports problems in its result
+setInterval(() => void checkOnce(), 60_000);

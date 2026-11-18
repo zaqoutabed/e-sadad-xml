@@ -102,14 +102,13 @@ const esadad = new CertificateSigner({
   billerPrivateKey: { path: 'dev-keys/esadad-dev.key' },
   esadadCertificate: { path: 'dev-keys/biller-dev.cer' },
 });
-console.log(
-  await signMessage(
-    `<MFEP><MsgHeader><GUID>manual-1</GUID></MsgHeader>
+// .then() instead of top-level await, so it runs whether tsx treats the file as CommonJS or ESM.
+signMessage(
+  `<MFEP><MsgHeader><GUID>manual-1</GUID></MsgHeader>
   <MsgBody><BillingInfo><AcctInfo><BillingNo>0599123456</BillingNo></AcctInfo><DueAmt>10</DueAmt>
   <ServiceTypeDetails><ServiceType>MOBILE_TOPUP</ServiceType></ServiceTypeDetails></BillingInfo></MsgBody></MFEP>`,
-    esadad,
-  ),
-);
+  esadad,
+).then(console.log);
 ```
 
 ```bash
