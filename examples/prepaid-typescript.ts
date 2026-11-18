@@ -1,8 +1,8 @@
 /**
- * HatCard prepaid top-up (ILS) with Express, in TypeScript.
+ * Prepaid top-up (ILS) with Express, in TypeScript.
  *
  * Run:  ESADAD_CERT=./certs/ESADAD.cer BILLER_PFX=./certs/biller.pfx BILLER_PFX_PASSWORD=... \
- *       AVAILABILITY_TOKEN=... npx tsx examples/hatcard-typescript.ts
+ *       AVAILABILITY_TOKEN=... npx tsx examples/prepaid-typescript.ts
  */
 import express from 'express';
 import {
@@ -21,16 +21,16 @@ function env(name: string): string {
   return value;
 }
 
-// Values from the HatCard prepaid sheet.
+// Dummy values: replace them with the ones E-SADAD gives you.
 const services: ServiceConfig[] = [
   {
-    serviceType: 'TELC_Recharge',
-    nameEn: 'HatCard TopUp - ILS',
-    nameAr: 'رصيد هات كارد - بالشيكل',
+    serviceType: 'MOBILE_TOPUP',
+    nameEn: 'Mobile TopUp - ILS',
+    nameAr: 'شحن رصيد - بالشيكل',
     paymentType: 'PrePaid',
     currency: 'ILS',
-    bankCode: 8,
-    iban: 'PS49PALS045431072990993100000',
+    bankCode: 99,
+    iban: 'PS00XXXX000000000000000000000', // dummy: use your settlement IBAN
     lowerValue: 1,
     upperValue: 1000,
   },
@@ -51,7 +51,7 @@ const adapter: BillerAdapter = {
 };
 
 const esadad = new EsadadService({
-  biller: { code: 344, name: 'HatCard' },
+  biller: { code: 999, name: 'My Company' }, // dummy: use your biller code from E-SADAD
   services,
   certificates: {
     esadadCertificate: { path: env('ESADAD_CERT') },

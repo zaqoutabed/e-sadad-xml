@@ -28,7 +28,7 @@ All 3 can be `async`. Write only the ones you use.
   originalBillingNo: '970599123456', // exactly what E-SADAD sent
   dueAmount: 20,                     // number (already checked against lowerValue/upperValue)
   validationCode: 'VC-001',
-  serviceType: 'TELC_Recharge',
+  serviceType: 'MOBILE_TOPUP',
   service: { …your service config… },
   guid: '…',
 }
@@ -119,13 +119,13 @@ Only `dueAmount` is required:
   dueAmount: 20,
   feesAmount: 0,
   currency: 'ILS',
-  serviceType: 'TELC_Recharge',
+  serviceType: 'MOBILE_TOPUP',
   bankTrxId: 'BT-…',
   processDate: '2026-11-12T10:00:00',
   stmtDate: '2026-11-12',
   paymentMethod: 'ACTDEB',
   accessChannel: 'Internet',
-  subPayments: [{ amount: 20, bankCode: '8', accountNo: 'PS49…' }],
+  subPayments: [{ amount: 20, bankCode: '99', accountNo: 'PS00…' }],
   guid: '…',
   service: { … },
 }

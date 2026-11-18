@@ -36,14 +36,14 @@ const billing = {
 function createService() {
   const store = new InMemoryStore();
   const service = new EsadadService({
-    biller: { code: 344 },
+    biller: { code: 999 }, // dummy: use your biller code from E-SADAD
     services: [
       {
-        serviceType: 'TELC_Recharge',
+        serviceType: 'MOBILE_TOPUP',
         paymentType: 'PrePaid',
         currency: 'ILS',
-        bankCode: 8,
-        iban: 'PS49PALS045431072990993100000',
+        bankCode: 99,
+        iban: 'PS00XXXX000000000000000000000', // dummy: use your settlement IBAN
       },
     ],
     certificates: {
@@ -68,7 +68,7 @@ describe('my E-SADAD integration', () => {
   it('accepts a known customer', async () => {
     const { service } = createService();
     const body = `<MsgBody><BillingInfo><AcctInfo><BillingNo>970599123456</BillingNo></AcctInfo><DueAmt>20</DueAmt>
-      <ServiceTypeDetails><ServiceType>TELC_Recharge</ServiceType></ServiceTypeDetails></BillingInfo></MsgBody>`;
+      <ServiceTypeDetails><ServiceType>MOBILE_TOPUP</ServiceType></ServiceTypeDetails></BillingInfo></MsgBody>`;
 
     const out = await service.prepaidValidation({ body: await request('g-1', body), guid: 'g-1' });
 
@@ -81,7 +81,7 @@ describe('my E-SADAD integration', () => {
     const { service } = createService();
     const body = `<MsgBody><Transactions><TrxInf><AcctInfo><BillingNo>0599123456</BillingNo></AcctInfo>
       <JOEBPPSTrx>T-1</JOEBPPSTrx><PaidAmt>20</PaidAmt><Currency>ILS</Currency>
-      <ServiceTypeDetails><ServiceType>TELC_Recharge</ServiceType></ServiceTypeDetails></TrxInf></Transactions></MsgBody>`;
+      <ServiceTypeDetails><ServiceType>MOBILE_TOPUP</ServiceType></ServiceTypeDetails></TrxInf></Transactions></MsgBody>`;
     const signed = await request('g-2', body);
 
     await service.receivePaymentNotification({ body: signed, guid: 'g-2' });

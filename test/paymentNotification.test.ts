@@ -26,7 +26,7 @@ describe('ReceivePaymentNotification', () => {
       paidAmount: 20,
       feesOnBiller: false,
       currency: 'ILS',
-      subPayments: [{ amount: 20, bankCode: '8', accountNo: 'PS49PALS045431072990993100000' }],
+      subPayments: [{ amount: 20, bankCode: '99', accountNo: 'PS00XXXX000000000000000000000' }],
     });
     expect(store.payments).toHaveLength(1);
     expect(store.payments[0]).toMatchObject({

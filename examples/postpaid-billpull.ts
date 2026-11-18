@@ -65,15 +65,15 @@ const adapter: BillerAdapter = {
 };
 
 const esadad = new EsadadService({
-  biller: { code: 344, name: 'My Company' },
+  biller: { code: 999, name: 'My Company' }, // dummy: use your biller code from E-SADAD
   services: [
     {
       serviceType: 'Invoices',
       nameEn: 'Monthly invoices',
       paymentType: 'PostPaid',
       currency: 'JOD', // JOD → amounts with 3 decimals (45.500)
-      bankCode: 8,
-      iban: 'PS00XXXX000000000000000000000',
+      bankCode: 99,
+      iban: 'PS00XXXX000000000000000000000', // dummy: use your settlement IBAN
       partialPayment: true,
       lowerValue: 1,
     },

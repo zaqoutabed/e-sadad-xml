@@ -41,14 +41,14 @@ export const esadadSide: MessageSigner = new CertificateSigner({
   billerPrivateKey: { data: esadadIdentity.keyPem },
 });
 
-export const HATCARD_SERVICE = {
-  serviceType: 'TELC_Recharge',
-  nameEn: 'HatCard TopUp - ILS',
-  nameAr: 'رصيد هات كارد - بالشيكل',
+export const PREPAID_SERVICE = {
+  serviceType: 'MOBILE_TOPUP',
+  nameEn: 'Mobile TopUp - ILS',
+  nameAr: 'شحن رصيد - بالشيكل',
   paymentType: 'PrePaid',
   currency: 'ILS',
-  bankCode: 8,
-  iban: 'PS49PALS045431072990993100000',
+  bankCode: 99,
+  iban: 'PS00XXXX000000000000000000000',
   lowerValue: 1,
   upperValue: 1000,
 } as const;
@@ -57,7 +57,7 @@ export const POSTPAID_SERVICE = {
   serviceType: 'Invoices',
   paymentType: 'PostPaid',
   currency: 'JOD',
-  bankCode: 8,
+  bankCode: 99,
   iban: 'PS00TEST000000000000000000000',
   partialPayment: true,
   lowerValue: 1,
@@ -66,14 +66,14 @@ export const POSTPAID_SERVICE = {
 export function createService(adapter: BillerAdapter, overrides: Partial<EsadadConfig> = {}) {
   const store = new InMemoryStore();
   const service = new EsadadService({
-    biller: { code: 344, name: 'HatCard' },
-    services: [HATCARD_SERVICE, POSTPAID_SERVICE],
+    biller: { code: 999, name: 'My Company' },
+    services: [PREPAID_SERVICE, POSTPAID_SERVICE],
     certificates: {
       esadadCertificate: { data: esadadIdentity.certPem },
       billerPfx: { data: billerIdentity.pfx, password: billerIdentity.password },
     },
     normalizeBillingNo: (billingNo, serviceType) =>
-      serviceType === 'TELC_Recharge' ? normalizeMobileNumber(billingNo) : billingNo.trim(),
+      serviceType === 'MOBILE_TOPUP' ? normalizeMobileNumber(billingNo) : billingNo.trim(),
     adapter,
     store,
     timestamp: () => '2026-11-12T10:00:00',
@@ -88,7 +88,7 @@ export function esadadRequest(guid: string, requestType: string, msgBody: string
   <MsgHeader>
     <TmStp>2026-11-12T09:59:00</TmStp>
     <GUID>${guid}</GUID>
-    <TrsInf><SdrCode>EBPP</SdrCode><RcvCode>344</RcvCode><ReqTyp>${requestType}</ReqTyp></TrsInf>
+    <TrsInf><SdrCode>EBPP</SdrCode><RcvCode>999</RcvCode><ReqTyp>${requestType}</ReqTyp></TrsInf>
   </MsgHeader>
   ${msgBody}
   <MsgFooter><Security><Signature></Signature></Security></MsgFooter>
@@ -101,11 +101,11 @@ export function prepaidBody(
 ) {
   return `<MsgBody>
     <BillingInfo>
-      <AcctInfo><BillingNo>${opts.billingNo ?? '0599123456'}</BillingNo><BillerCode>${opts.billerCode ?? '344'}</BillerCode></AcctInfo>
+      <AcctInfo><BillingNo>${opts.billingNo ?? '0599123456'}</BillingNo><BillerCode>${opts.billerCode ?? '999'}</BillerCode></AcctInfo>
       <DueAmt>${opts.amount ?? '20'}</DueAmt>
       ${opts.currency ? `<Currency>${opts.currency}</Currency>` : ''}
       <ValidationCode>VC-001</ValidationCode>
-      <ServiceTypeDetails><ServiceType>${opts.serviceType ?? 'TELC_Recharge'}</ServiceType></ServiceTypeDetails>
+      <ServiceTypeDetails><ServiceType>${opts.serviceType ?? 'MOBILE_TOPUP'}</ServiceType></ServiceTypeDetails>
     </BillingInfo>
   </MsgBody>`;
 }
@@ -115,7 +115,7 @@ export function paymentTrx(opts: { trx: string; billingNo?: string; paid?: strin
     <AcctInfo><BillingNo>${opts.billingNo ?? '0599123456'}</BillingNo><BillNo>B-1</BillNo></AcctInfo>
     <JOEBPPSTrx>${opts.trx}</JOEBPPSTrx>
     <BankTrxID>BT-${opts.trx}</BankTrxID>
-    <BankCode>8</BankCode>
+    <BankCode>99</BankCode>
     <PmtStatus>PmtNew</PmtStatus>
     <DueAmt>${opts.paid ?? '20.00'}</DueAmt>
     <PaidAmt>${opts.paid ?? '20.00'}</PaidAmt>
@@ -127,8 +127,8 @@ export function paymentTrx(opts: { trx: string; billingNo?: string; paid?: strin
     <PaymentMethod>ACTDEB</PaymentMethod>
     <PaymentType>Prepaid</PaymentType>
     <Currency>${opts.currency ?? 'ILS'}</Currency>
-    <ServiceTypeDetails><ServiceType>${opts.serviceType ?? 'TELC_Recharge'}</ServiceType></ServiceTypeDetails>
-    <SubPmts><SubPmt><Amount>${opts.paid ?? '20.00'}</Amount><SetBnkCode>8</SetBnkCode><AcctNo>PS49PALS045431072990993100000</AcctNo></SubPmt></SubPmts>
+    <ServiceTypeDetails><ServiceType>${opts.serviceType ?? 'MOBILE_TOPUP'}</ServiceType></ServiceTypeDetails>
+    <SubPmts><SubPmt><Amount>${opts.paid ?? '20.00'}</Amount><SetBnkCode>99</SetBnkCode><AcctNo>PS00XXXX000000000000000000000</AcctNo></SubPmt></SubPmts>
   </TrxInf>`;
 }
 

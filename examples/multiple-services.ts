@@ -6,22 +6,22 @@ import { EsadadService, InMemoryStore, normalizeMobileNumber, type BillerAdapter
 
 const services: ServiceConfig[] = [
   {
-    serviceType: 'TELC_Recharge',
-    nameEn: 'HatCard TopUp - ILS',
-    nameAr: 'رصيد هات كارد - بالشيكل',
+    serviceType: 'MOBILE_TOPUP',
+    nameEn: 'Mobile TopUp - ILS',
+    nameAr: 'شحن رصيد - بالشيكل',
     paymentType: 'PrePaid',
     currency: 'ILS',
-    bankCode: 8,
-    iban: 'PS49PALS045431072990993100000',
+    bankCode: 99,
+    iban: 'PS00XXXX000000000000000000000', // dummy: use your settlement IBAN
     lowerValue: 5,
     upperValue: 500,
   },
   {
-    serviceType: 'TELC_Recharge_USD',
-    nameEn: 'HatCard TopUp - USD',
+    serviceType: 'MOBILE_TOPUP_USD',
+    nameEn: 'Mobile TopUp - USD',
     paymentType: 'PrePaid',
     currency: 'USD',
-    bankCode: 8,
+    bankCode: 99,
     iban: 'PS00XXXX000000000000000000001',
     lowerValue: 2,
     upperValue: 150,
@@ -31,7 +31,7 @@ const services: ServiceConfig[] = [
     nameEn: 'Business invoices',
     paymentType: 'PostPaid',
     currency: 'JOD',
-    bankCode: 8,
+    bankCode: 99,
     iban: 'PS00XXXX000000000000000000002',
   },
 ];
@@ -49,8 +49,8 @@ const adapter: BillerAdapter = {
   },
   async postPayment(trx) {
     switch (trx.serviceType) {
-      case 'TELC_Recharge':
-      case 'TELC_Recharge_USD':
+      case 'MOBILE_TOPUP':
+      case 'MOBILE_TOPUP_USD':
         console.log(`Top up ${trx.billingNo} with ${trx.paidAmount} ${trx.currency}`);
         break;
       case 'Invoices':
@@ -61,7 +61,7 @@ const adapter: BillerAdapter = {
 };
 
 export const esadad = new EsadadService({
-  biller: { code: 344, name: 'HatCard' },
+  biller: { code: 999, name: 'My Company' }, // dummy: use your biller code from E-SADAD
   services,
   certificates: {
     esadadCertificate: { path: 'dev-keys/esadad-dev.cer' },
@@ -69,7 +69,7 @@ export const esadad = new EsadadService({
   },
   // Prepaid services use mobile numbers; invoices use account numbers.
   normalizeBillingNo: (billingNo, serviceType) => {
-    if (serviceType.startsWith('TELC_Recharge')) return normalizeMobileNumber(billingNo); // '' → Invalid Billing Number
+    if (serviceType.startsWith('MOBILE_TOPUP')) return normalizeMobileNumber(billingNo); // '' → Invalid Billing Number
     const account = billingNo.trim().toUpperCase();
     return /^CUST-\d+$/.test(account) ? account : null; // null → Invalid Billing Number
   },
@@ -78,4 +78,4 @@ export const esadad = new EsadadService({
 });
 
 // Look up a service's configuration at runtime:
-console.log(esadad.getService('TELC_Recharge_USD')?.upperValue); // 150
+console.log(esadad.getService('MOBILE_TOPUP_USD')?.upperValue); // 150

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { EsadadConfigError, EsadadService, EsadadSigningError, verifyMessage, type EsadadStore } from '../src';
-import { HATCARD_SERVICE, createService, esadadIdentity, esadadRequest, esadadSide, prepaidBody } from './helpers';
+import { PREPAID_SERVICE, createService, esadadIdentity, esadadRequest, esadadSide, prepaidBody } from './helpers';
 
 const RQ = 'BILRPREPADVALRQ';
 const adapter = { validatePrepaid: () => ({ valid: true as const }) };
@@ -187,7 +187,7 @@ describe('service helpers', () => {
 
   it('getService() returns the service config', () => {
     const { service } = createService(adapter);
-    expect(service.getService('TELC_Recharge')?.iban).toBe('PS49PALS045431072990993100000');
+    expect(service.getService('MOBILE_TOPUP')?.iban).toBe('PS00XXXX000000000000000000000');
     expect(service.getService('missing')).toBeUndefined();
   });
 
@@ -200,8 +200,8 @@ describe('service helpers', () => {
 
 describe('configuration validation', () => {
   const base = {
-    biller: { code: 344 },
-    services: [HATCARD_SERVICE],
+    biller: { code: 999 },
+    services: [PREPAID_SERVICE],
     certificates: { esadadCertificate: { data: esadadIdentity.certPem }, billerPrivateKey: { data: esadadIdentity.keyPem } },
     adapter,
   };
@@ -213,11 +213,11 @@ describe('configuration validation', () => {
   it.each([
     ['missing biller code', { biller: { code: '' } }],
     ['no services', { services: [] }],
-    ['duplicate service', { services: [HATCARD_SERVICE, HATCARD_SERVICE] }],
-    ['bad currency', { services: [{ ...HATCARD_SERVICE, currency: 'GBP' }] }],
-    ['bad payment type', { services: [{ ...HATCARD_SERVICE, paymentType: 'Monthly' }] }],
-    ['missing IBAN', { services: [{ ...HATCARD_SERVICE, iban: '' }] }],
-    ['lower > upper', { services: [{ ...HATCARD_SERVICE, lowerValue: 10, upperValue: 1 }] }],
+    ['duplicate service', { services: [PREPAID_SERVICE, PREPAID_SERVICE] }],
+    ['bad currency', { services: [{ ...PREPAID_SERVICE, currency: 'GBP' }] }],
+    ['bad payment type', { services: [{ ...PREPAID_SERVICE, paymentType: 'Monthly' }] }],
+    ['missing IBAN', { services: [{ ...PREPAID_SERVICE, iban: '' }] }],
+    ['lower > upper', { services: [{ ...PREPAID_SERVICE, lowerValue: 10, upperValue: 1 }] }],
     ['no keys', { certificates: undefined }],
     ['half credentials', { credentials: { username: 'a', password: '' } }],
     ['missing adapter', { adapter: undefined }],

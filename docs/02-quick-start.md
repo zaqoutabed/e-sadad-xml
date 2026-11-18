@@ -60,16 +60,16 @@ import { createEsadadRouter } from 'e-sadad-xml/express';
 
 const esadad = new EsadadService({
   // 1️⃣ Who you are
-  biller: { code: 344, name: 'HatCard' },
+  biller: { code: 999, name: 'My Company' }, // dummy: use your biller code from E-SADAD
 
   // 2️⃣ What you sell
   services: [
     {
-      serviceType: 'TELC_Recharge',
+      serviceType: 'MOBILE_TOPUP',
       paymentType: 'PrePaid',
       currency: 'ILS',
-      bankCode: 8,
-      iban: 'PS49PALS045431072990993100000',
+      bankCode: 99,
+      iban: 'PS00XXXX000000000000000000000', // dummy: use your settlement IBAN
     },
   ],
 

@@ -88,16 +88,16 @@ const adapter: BillerAdapter = {
 };
 
 const esadad = new EsadadService({
-  biller: { code: 344, name: 'HatCard' },
+  biller: { code: 999, name: 'My Company' }, // dummy: use your biller code from E-SADAD
   services: [
     {
-      serviceType: 'TELC_Recharge',
-      nameEn: 'HatCard TopUp - ILS',
-      nameAr: 'رصيد هات كارد - بالشيكل',
+      serviceType: 'MOBILE_TOPUP',
+      nameEn: 'Mobile TopUp - ILS',
+      nameAr: 'شحن رصيد - بالشيكل',
       paymentType: 'PrePaid',
       currency: 'ILS',
-      bankCode: 8,
-      iban: 'PS49PALS045431072990993100000',
+      bankCode: 99,
+      iban: 'PS00XXXX000000000000000000000', // dummy: use your settlement IBAN
     },
   ],
   certificates: {
@@ -116,7 +116,7 @@ app.use('/api/v1/esadad', createEsadadRouter(esadad));
 app.listen(3000);
 ```
 
-Runnable versions: [`examples/hatcard-typescript.ts`](examples/hatcard-typescript.ts) and [`examples/hatcard-javascript.cjs`](examples/hatcard-javascript.cjs).
+Runnable versions: [`examples/prepaid-typescript.ts`](examples/prepaid-typescript.ts) and [`examples/prepaid-javascript.cjs`](examples/prepaid-javascript.cjs).
 
 ## Quick start (JavaScript)
 
@@ -126,9 +126,9 @@ const { EsadadService, normalizeMobileNumber } = require('e-sadad-xml');
 const { createEsadadRouter } = require('e-sadad-xml/express');
 
 const esadad = new EsadadService({
-  biller: { code: 344 },
+  biller: { code: 999 }, // dummy: use your biller code from E-SADAD
   services: [
-    { serviceType: 'TELC_Recharge', paymentType: 'PrePaid', currency: 'ILS', bankCode: 8, iban: 'PS49PALS045431072990993100000' },
+    { serviceType: 'MOBILE_TOPUP', paymentType: 'PrePaid', currency: 'ILS', bankCode: 99, iban: 'PS00XXXX000000000000000000000' }, // dummy values: use your own from E-SADAD
   ],
   certificates: {
     esadadCertificate: { path: './certs/ESADAD.cer' },
@@ -179,7 +179,7 @@ app.listen(3000);
 
 | Field                      | Description                                                  |
 | -------------------------- | ------------------------------------------------------------ |
-| `serviceType`              | E-SADAD `ServiceType` code, for example `TELC_Recharge`.     |
+| `serviceType`              | E-SADAD `ServiceType` code, for example `MOBILE_TOPUP`.      |
 | `nameAr`, `nameEn`         | Display names (optional).                                    |
 | `paymentType`              | `'PrePaid'` (PrepaidValidation) or `'PostPaid'` (BillPull).  |
 | `currency`                 | `JOD` (3 decimals), `USD`, `ILS`, `EUR`/`EURO` (2 decimals). |

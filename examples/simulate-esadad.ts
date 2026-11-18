@@ -5,7 +5,7 @@
  * 1. bash examples/dev-keys.sh                 (creates dev-keys/)
  * 2. start your server with the dev keys, e.g.:
  *      ESADAD_CERT=dev-keys/esadad-dev.cer BILLER_PFX=dev-keys/biller-dev.pfx BILLER_PFX_PASSWORD=dev-password \
- *      AVAILABILITY_TOKEN=dev-token node examples/hatcard-javascript.cjs
+ *      AVAILABILITY_TOKEN=dev-token node examples/prepaid-javascript.cjs
  * 3. npx tsx examples/simulate-esadad.ts
  *
  * It sends signed requests (like E-SADAD does) and checks your server's signatures.
@@ -28,7 +28,7 @@ async function send(path: string, requestType: string, msgBody: string, guid = r
     <MsgHeader>
       <TmStp>${new Date().toISOString().slice(0, 19)}</TmStp>
       <GUID>${guid}</GUID>
-      <TrsInf><SdrCode>EBPP</SdrCode><RcvCode>344</RcvCode><ReqTyp>${requestType}</ReqTyp></TrsInf>
+      <TrsInf><SdrCode>EBPP</SdrCode><RcvCode>999</RcvCode><ReqTyp>${requestType}</ReqTyp></TrsInf>
     </MsgHeader>
     ${msgBody}
     <MsgFooter><Security><Signature></Signature></Security></MsgFooter>
@@ -46,18 +46,18 @@ async function send(path: string, requestType: string, msgBody: string, guid = r
 }
 
 const prepaid = (billingNo: string, amount: string) => `<MsgBody><BillingInfo>
-  <AcctInfo><BillingNo>${billingNo}</BillingNo><BillerCode>344</BillerCode></AcctInfo>
+  <AcctInfo><BillingNo>${billingNo}</BillingNo><BillerCode>999</BillerCode></AcctInfo>
   <DueAmt>${amount}</DueAmt><ValidationCode>VC-${Date.now()}</ValidationCode>
-  <ServiceTypeDetails><ServiceType>TELC_Recharge</ServiceType></ServiceTypeDetails>
+  <ServiceTypeDetails><ServiceType>MOBILE_TOPUP</ServiceType></ServiceTypeDetails>
 </BillingInfo></MsgBody>`;
 
 const payment = (trx: string, billingNo: string, amount: string) => `<MsgBody><Transactions><TrxInf>
   <AcctInfo><BillingNo>${billingNo}</BillingNo></AcctInfo>
-  <JOEBPPSTrx>${trx}</JOEBPPSTrx><BankTrxID>BANK-${trx}</BankTrxID><BankCode>8</BankCode><PmtStatus>PmtNew</PmtStatus>
+  <JOEBPPSTrx>${trx}</JOEBPPSTrx><BankTrxID>BANK-${trx}</BankTrxID><BankCode>99</BankCode><PmtStatus>PmtNew</PmtStatus>
   <DueAmt>${amount}</DueAmt><PaidAmt>${amount}</PaidAmt><FeesAmt>0</FeesAmt><FeesOnBiller>false</FeesOnBiller>
   <ProcessDate>${new Date().toISOString().slice(0, 19)}</ProcessDate><STMTDate>${new Date().toISOString().slice(0, 10)}</STMTDate>
   <AccessChannel>Internet</AccessChannel><PaymentMethod>ACTDEB</PaymentMethod><PaymentType>Prepaid</PaymentType>
-  <Currency>ILS</Currency><ServiceTypeDetails><ServiceType>TELC_Recharge</ServiceType></ServiceTypeDetails>
+  <Currency>ILS</Currency><ServiceTypeDetails><ServiceType>MOBILE_TOPUP</ServiceType></ServiceTypeDetails>
 </TrxInf></Transactions></MsgBody>`;
 
 // --- Scenarios ---------------------------------------------------------------------

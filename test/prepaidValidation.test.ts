@@ -14,12 +14,12 @@ describe('PrepaidValidation', () => {
 
     expect(out.result.code).toBe(0);
     expect(out.xml).toBe(
-      '<MFEP><MsgHeader><TmStp>2026-11-12T10:00:00</TmStp><GUID>guid-1</GUID><TrsInf><SdrCode>344</SdrCode><ResTyp>BILRPREPADVALRS</ResTyp></TrsInf>' +
+      '<MFEP><MsgHeader><TmStp>2026-11-12T10:00:00</TmStp><GUID>guid-1</GUID><TrsInf><SdrCode>999</SdrCode><ResTyp>BILRPREPADVALRS</ResTyp></TrsInf>' +
         '<Result><ErrorCode>0</ErrorCode><ErrorDesc>Success</ErrorDesc><Severity>Info</Severity></Result></MsgHeader>' +
         '<MsgBody><BillingInfo><Result><ErrorCode>0</ErrorCode><ErrorDesc>Success</ErrorDesc><Severity>Info</Severity></Result>' +
-        '<AcctInfo><BillingNo>970599123456</BillingNo><BillerCode>344</BillerCode></AcctInfo><DueAmt>20.00</DueAmt><Currency>ILS</Currency>' +
-        '<ValidationCode>VC-001</ValidationCode><ServiceTypeDetails><ServiceType>TELC_Recharge</ServiceType></ServiceTypeDetails>' +
-        '<SubPmts><SubPmt><Amount>20.00</Amount><SetBnkCode>8</SetBnkCode><AcctNo>PS49PALS045431072990993100000</AcctNo></SubPmt></SubPmts>' +
+        '<AcctInfo><BillingNo>970599123456</BillingNo><BillerCode>999</BillerCode></AcctInfo><DueAmt>20.00</DueAmt><Currency>ILS</Currency>' +
+        '<ValidationCode>VC-001</ValidationCode><ServiceTypeDetails><ServiceType>MOBILE_TOPUP</ServiceType></ServiceTypeDetails>' +
+        '<SubPmts><SubPmt><Amount>20.00</Amount><SetBnkCode>99</SetBnkCode><AcctNo>PS00XXXX000000000000000000000</AcctNo></SubPmt></SubPmts>' +
         `</BillingInfo></MsgBody><MsgFooter><Security><Signature>${out.xml.match(/<Signature>([^<]+)</)![1]}</Signature></Security></MsgFooter></MFEP>`,
     );
     expect(await verifyMessage(out.xml, esadadSide)).toEqual({ valid: true });
@@ -27,12 +27,12 @@ describe('PrepaidValidation', () => {
     // The adapter receives the normalised billing number and parsed values.
     const req = validatePrepaid.mock.calls[0]![0];
     expect(req).toMatchObject({ guid: 'guid-1', billingNo: '0599123456', originalBillingNo: '970599123456', dueAmount: 20 });
-    expect(req.service.serviceType).toBe('TELC_Recharge');
+    expect(req.service.serviceType).toBe('MOBILE_TOPUP');
 
     // Request and response are both logged.
     expect(store.transactions.map((t) => [t.transactionType, t.api, t.guid, t.billingNo, t.serviceType, t.currency])).toEqual([
-      ['Request', 'PrepaidValidation', 'guid-1', '970599123456', 'TELC_Recharge', 'ILS'],
-      ['Response', 'PrepaidValidation', 'guid-1', '970599123456', 'TELC_Recharge', 'ILS'],
+      ['Request', 'PrepaidValidation', 'guid-1', '970599123456', 'MOBILE_TOPUP', 'ILS'],
+      ['Response', 'PrepaidValidation', 'guid-1', '970599123456', 'MOBILE_TOPUP', 'ILS'],
     ]);
   });
 
@@ -59,7 +59,7 @@ describe('PrepaidValidation', () => {
     ['non-numeric amount', { amount: 'abc' }, null, 7],
     ['hex amount', { amount: '0x10' }, null, 7],
     ['exponent amount', { amount: '1e2' }, null, 7],
-    ['wrong biller code', { billerCode: '999' }, null, 4],
+    ['wrong biller code', { billerCode: '111' }, null, 4],
     ['unknown service type', { serviceType: 'Nope' }, null, 5],
     ['post-paid service used for prepaid', { serviceType: 'Invoices' }, null, 5],
     ['wrong currency', { currency: 'USD' }, null, 6],
