@@ -13,23 +13,26 @@ import { PostgresStore } from './sql/postgresStore.js';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-const [biller, services, certificates] = await Promise.all([
-  pool.query('SELECT biller_code, biller_name FROM esadad_biller'),
-  pool.query('SELECT * FROM esadad_services WHERE is_active'),
-  pool.query('SELECT certificate_owner, certificate_type, certificate_path, certificate_password FROM esadad_certificates'),
-]);
+/** Loads the config tables and builds the service. Call it once at startup. */
+export async function createEsadad(): Promise<EsadadService> {
+  const [biller, services, certificates] = await Promise.all([
+    pool.query('SELECT biller_code, biller_name FROM esadad_biller'),
+    pool.query('SELECT * FROM esadad_services WHERE is_active'),
+    pool.query('SELECT certificate_owner, certificate_type, certificate_path, certificate_password FROM esadad_certificates'),
+  ]);
 
-export const esadad = new EsadadService({
-  ...configFromTables(
-    { biller: biller.rows, services: services.rows, certificates: certificates.rows },
-    { baseDir: '/etc/esadad' }, // relative certificate paths are resolved from here
-  ),
-  adapter: {
-    validatePrepaid: async () => ({ valid: true }),
-    postPayment: async () => undefined,
-  },
-  store: new PostgresStore(pool),
-});
+  return new EsadadService({
+    ...configFromTables(
+      { biller: biller.rows, services: services.rows, certificates: certificates.rows },
+      { baseDir: '/etc/esadad' }, // relative certificate paths are resolved from here
+    ),
+    adapter: {
+      validatePrepaid: async () => ({ valid: true }),
+      postPayment: async () => undefined,
+    },
+    store: new PostgresStore(pool),
+  });
+}
 
 /*
 Matching tables (PostgreSQL):
