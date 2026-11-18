@@ -6,6 +6,8 @@
  * Column names can be the document's (ServiceTypeCode) or database style
  * (service_type_code): matching ignores case and underscores. String values
  * such as '1', 'true' and '10.500' are converted for you.
+ *
+ * Usage: `const esadad = await createEsadadService();` before mounting routes.
  */
 import { Pool } from 'pg';
 import { EsadadService, configFromTables } from 'e-sadad-xml';
@@ -13,23 +15,26 @@ import { PostgresStore } from './sql/postgresStore.js';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-const [biller, services, certificates] = await Promise.all([
-  pool.query('SELECT biller_code, biller_name FROM esadad_biller'),
-  pool.query('SELECT * FROM esadad_services WHERE is_active'),
-  pool.query('SELECT certificate_owner, certificate_type, certificate_path, certificate_password FROM esadad_certificates'),
-]);
+/** Reads the config tables and builds the service. Call once at startup. */
+export async function createEsadadService(): Promise<EsadadService> {
+  const [biller, services, certificates] = await Promise.all([
+    pool.query('SELECT biller_code, biller_name FROM esadad_biller'),
+    pool.query('SELECT * FROM esadad_services WHERE is_active'),
+    pool.query('SELECT certificate_owner, certificate_type, certificate_path, certificate_password FROM esadad_certificates'),
+  ]);
 
-export const esadad = new EsadadService({
-  ...configFromTables(
-    { biller: biller.rows, services: services.rows, certificates: certificates.rows },
-    { baseDir: '/etc/esadad' }, // relative certificate paths are resolved from here
-  ),
-  adapter: {
-    validatePrepaid: async () => ({ valid: true }),
-    postPayment: async () => undefined,
-  },
-  store: new PostgresStore(pool),
-});
+  return new EsadadService({
+    ...configFromTables(
+      { biller: biller.rows, services: services.rows, certificates: certificates.rows },
+      { baseDir: '/etc/esadad' }, // relative certificate paths are resolved from here
+    ),
+    adapter: {
+      validatePrepaid: async () => ({ valid: true }),
+      postPayment: async () => undefined,
+    },
+    store: new PostgresStore(pool),
+  });
+}
 
 /*
 Matching tables (PostgreSQL):

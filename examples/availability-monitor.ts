@@ -23,5 +23,5 @@ async function checkOnce(): Promise<void> {
   }
 }
 
-await checkOnce();
+void checkOnce();
 setInterval(checkOnce, 60_000);

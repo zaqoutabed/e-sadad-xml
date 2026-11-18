@@ -61,23 +61,34 @@ const payment = (trx: string, billingNo: string, amount: string) => `<MsgBody><T
 </TrxInf></Transactions></MsgBody>`;
 
 // --- Scenarios ---------------------------------------------------------------------
-console.log('1) Availability');
-console.log(
-  await requestAvailability({ baseUrl: BASE.replace(/\/api\/.*$/, ''), path: '/api/v1/esadad/availability', token: 'dev-token' }),
-);
+async function main() {
+  console.log('1) Availability');
+  console.log(
+    await requestAvailability({
+      baseUrl: BASE.replace(/\/api\/.*$/, ''),
+      path: '/api/v1/esadad/availability',
+      token: 'dev-token',
+    }),
+  );
 
-console.log('\n2) Prepaid validation: valid number, then invalid number');
-await send('/prepaid/PrepaidValidation', 'BILRPREPADVALRQ', prepaid('0599123456', '20'));
-await send('/prepaid/PrepaidValidation', 'BILRPREPADVALRQ', prepaid('12345', '20'));
+  console.log('\n2) Prepaid validation: valid number, then invalid number');
+  await send('/prepaid/PrepaidValidation', 'BILRPREPADVALRQ', prepaid('0599123456', '20'));
+  await send('/prepaid/PrepaidValidation', 'BILRPREPADVALRQ', prepaid('12345', '20'));
 
-console.log('\n3) Payment, then the same payment again (E-SADAD retry → must NOT top up twice)');
-const trx = String(Date.now());
-const first = await send('/Payment/ReceivePaymentNotification', 'BLRPMTNTFRQ', payment(trx, '0599123456', '20'));
-const res = await fetch(`${BASE}/Payment/ReceivePaymentNotification?guid=${first.guid}`, { method: 'POST', body: first.body });
-console.log(`  retry → HTTP ${res.status}, check your server log: only ONE top-up for trx ${trx}`);
+  console.log('\n3) Payment, then the same payment again (E-SADAD retry → must NOT top up twice)');
+  const trx = String(Date.now());
+  const first = await send('/Payment/ReceivePaymentNotification', 'BLRPMTNTFRQ', payment(trx, '0599123456', '20'));
+  const res = await fetch(`${BASE}/Payment/ReceivePaymentNotification?guid=${first.guid}`, { method: 'POST', body: first.body });
+  console.log(`  retry → HTTP ${res.status}, check your server log: only ONE top-up for trx ${trx}`);
 
-console.log('\n4) Tampered request (amount changed after signing) → expect 2 Invalid Signature');
-const signed = await signMessage(`<MFEP><MsgHeader><GUID>t-1</GUID></MsgHeader>${prepaid('0599123456', '20')}</MFEP>`, esadad);
-const tampered = signed.replace('<DueAmt>20</DueAmt>', '<DueAmt>2000</DueAmt>');
-const t = await fetch(`${BASE}/prepaid/PrepaidValidation?guid=t-1`, { method: 'POST', body: tampered });
-console.log(`  ${(await t.text()).match(/<ErrorCode>\d+<\/ErrorCode><ErrorDesc>[^<]*/)?.[0]}`);
+  console.log('\n4) Tampered request (amount changed after signing) → expect 2 Invalid Signature');
+  const signed = await signMessage(`<MFEP><MsgHeader><GUID>t-1</GUID></MsgHeader>${prepaid('0599123456', '20')}</MFEP>`, esadad);
+  const tampered = signed.replace('<DueAmt>20</DueAmt>', '<DueAmt>2000</DueAmt>');
+  const t = await fetch(`${BASE}/prepaid/PrepaidValidation?guid=t-1`, { method: 'POST', body: tampered });
+  console.log(`  ${(await t.text()).match(/<ErrorCode>\d+<\/ErrorCode><ErrorDesc>[^<]*/)?.[0]}`);
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exitCode = 1;
+});
