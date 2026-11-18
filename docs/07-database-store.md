@@ -63,16 +63,16 @@ const esadad = new EsadadService({ …, store: new SqlServerStore(pool) });
 
 **EsadadTransactionsLogs**: one row per request and per response:
 
-| Column                     | Example                 |
-| -------------------------- | ----------------------- |
-| TransactionType            | `Request` / `Response`  |
-| Api                        | `PrepaidValidation`     |
-| Guid                       | `a1b2…`                 |
-| BillingNumber / BillNumber | `0599123456` / `B-1`    |
+| Column                     | Example                |
+| -------------------------- | ---------------------- |
+| TransactionType            | `Request` / `Response` |
+| Api                        | `PrepaidValidation`    |
+| Guid                       | `a1b2…`                |
+| BillingNumber / BillNumber | `0599123456` / `B-1`   |
 | ServiceType / Currency     | `MOBILE_TOPUP` / `ILS` |
-| ResultCode                 | `0` (responses only)    |
-| XmlElement                 | the full XML            |
-| InsertDateTime             | now                     |
+| ResultCode                 | `0` (responses only)   |
+| XmlElement                 | the full XML           |
+| InsertDateTime             | now                    |
 
 **EsadadPaymentsLogs**: one row per payment received:
 

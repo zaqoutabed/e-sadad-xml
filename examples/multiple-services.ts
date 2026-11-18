@@ -12,7 +12,7 @@ const services: ServiceConfig[] = [
     paymentType: 'PrePaid',
     currency: 'ILS',
     bankCode: 99,
-    iban: 'PS00XXXX000000000000000000000',
+    iban: 'PS00XXXX000000000000000000000', // dummy: use your settlement IBAN
     lowerValue: 5,
     upperValue: 500,
   },
@@ -61,7 +61,7 @@ const adapter: BillerAdapter = {
 };
 
 export const esadad = new EsadadService({
-  biller: { code: 999, name: 'the app' },
+  biller: { code: 999, name: 'My Company' }, // dummy: use your biller code from E-SADAD
   services,
   certificates: {
     esadadCertificate: { path: 'dev-keys/esadad-dev.cer' },

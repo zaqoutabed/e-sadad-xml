@@ -13,7 +13,7 @@
 ### 1. `biller`: who you are
 
 ```ts
-biller: { code: 999, name: 'the app' }
+biller: { code: 999, name: 'My Company' } // dummy: use your biller code from E-SADAD
 ```
 
 - `code`: given to you by E-SADAD. Sent in every response.
@@ -32,7 +32,7 @@ services: [
     paymentType: 'PrePaid', // 'PrePaid' or 'PostPaid'
     currency: 'ILS', // 'JOD' | 'USD' | 'ILS' | 'EUR' (or 'EURO')
     bankCode: 99, // settlement bank
-    iban: 'PS00XXXX000000000000000000000', // settlement account
+    iban: 'PS00XXXX000000000000000000000', // dummy: use your settlement IBAN
     lowerValue: 1, // optional: minimum amount
     upperValue: 1000, // optional: maximum amount
     partialPayment: false, // optional, postpaid only
@@ -140,11 +140,13 @@ The integration document asks for **config tables** (Biller, Services, Certifica
 
 ### From a JSON file
 
+⚠️ The values in the file below are dummy values. Replace them with your own.
+
 📄 [`examples/config/esadad.config.json`](../examples/config/esadad.config.json) · [`examples/config-from-file.ts`](../examples/config-from-file.ts)
 
 ```json
 {
-  "biller": { "BillerCode": "999", "BillerName": "the app" },
+  "biller": { "BillerCode": "999", "BillerName": "My Company" },
   "services": [
     {
       "ServiceTypeCode": "MOBILE_TOPUP",
@@ -157,7 +159,7 @@ The integration document asks for **config tables** (Biller, Services, Certifica
   "certificates": [
     { "CertificateOwner": "Esadad", "CertificateType": "Public", "CertificatePath": "certs/ESADAD.cer" },
     {
-      "CertificateOwner": "the app",
+      "CertificateOwner": "My Company",
       "CertificateType": "Private",
       "CertificatePath": "certs/biller.pfx",
       "CertificatePassword": "env:BILLER_PFX_PASSWORD"

@@ -11,9 +11,9 @@ writeFileSync(join(dir, 'ESADAD.cer'), esadadIdentity.certPem);
 writeFileSync(join(dir, 'biller.pfx'), billerIdentity.pfx);
 writeFileSync(join(dir, 'biller.key'), billerIdentity.keyPem);
 
-/** Rows exactly as the integration document names the columns (the app sheet values). */
+/** Rows exactly as the integration document names the columns (dummy values). */
 const tables = (): ConfigTables => ({
-  biller: { BillerCode: 999, BillerName: 'the app' },
+  biller: { BillerCode: 999, BillerName: 'My Company' },
   services: [
     {
       ServiceTypeCode: 'MOBILE_TOPUP',
@@ -31,7 +31,7 @@ const tables = (): ConfigTables => ({
   certificates: [
     { CertificateOwner: 'Esadad', CertificateType: 'Public', CertificatePath: 'ESADAD.cer' },
     {
-      CertificateOwner: 'the app',
+      CertificateOwner: 'My Company',
       CertificateType: 'Private',
       CertificatePath: 'biller.pfx',
       CertificatePassword: billerIdentity.password,
@@ -42,7 +42,7 @@ const tables = (): ConfigTables => ({
 describe('configFromTables', () => {
   it('maps the document columns to the library config', () => {
     const config = configFromTables(tables(), { baseDir: dir });
-    expect(config.biller).toEqual({ code: '999', name: 'the app' });
+    expect(config.biller).toEqual({ code: '999', name: 'My Company' });
     expect(config.services).toEqual([
       {
         serviceType: 'MOBILE_TOPUP',

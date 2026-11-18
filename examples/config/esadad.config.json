@@ -1,5 +1,5 @@
 {
-  "biller": { "BillerCode": "999", "BillerName": "the app" },
+  "biller": { "BillerCode": "999", "BillerName": "My Company" },
   "services": [
     {
       "ServiceTypeCode": "MOBILE_TOPUP",
@@ -17,7 +17,7 @@
   "certificates": [
     { "CertificateOwner": "Esadad", "CertificateType": "Public", "CertificatePath": "../../dev-keys/esadad-dev.cer" },
     {
-      "CertificateOwner": "the app",
+      "CertificateOwner": "My Company",
       "CertificateType": "Private",
       "CertificatePath": "../../dev-keys/biller-dev.pfx",
       "CertificatePassword": "env:BILLER_PFX_PASSWORD"

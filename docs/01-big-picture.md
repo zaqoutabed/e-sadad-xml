@@ -41,7 +41,7 @@ sequenceDiagram
 | 3   | **ReceivePaymentNotification** | **After** the customer paid                    | "Post this payment."                          |
 | 4   | **Availability**               | Any time (health check)                        | Nothing; the library answers.                 |
 
-💡 **Prepaid only** (like the app top-ups)? You need **1 + 3**.
+💡 **Prepaid only** (like mobile top-ups)? You need **1 + 3**.
 💡 **Bills only**? You need **2 + 3**.
 
 ---

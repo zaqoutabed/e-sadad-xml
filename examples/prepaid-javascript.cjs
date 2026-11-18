@@ -1,5 +1,5 @@
 /**
- * The same the app integration in plain JavaScript (CommonJS).
+ * The same prepaid top-up integration in plain JavaScript (CommonJS).
  *
  * Run:  ESADAD_CERT=./certs/ESADAD.cer BILLER_PFX=./certs/biller.pfx BILLER_PFX_PASSWORD=... \
  *       AVAILABILITY_TOKEN=... node examples/prepaid-javascript.cjs
@@ -9,7 +9,7 @@ const { EsadadService, InMemoryStore, normalizeMobileNumber } = require('e-sadad
 const { createEsadadRouter } = require('e-sadad-xml/express');
 
 const esadad = new EsadadService({
-  biller: { code: 999, name: 'the app' },
+  biller: { code: 999, name: 'My Company' }, // dummy: use your biller code from E-SADAD
   services: [
     {
       serviceType: 'MOBILE_TOPUP',
@@ -18,7 +18,7 @@ const esadad = new EsadadService({
       paymentType: 'PrePaid',
       currency: 'ILS',
       bankCode: 99,
-      iban: 'PS00XXXX000000000000000000000',
+      iban: 'PS00XXXX000000000000000000000', // dummy: use your settlement IBAN
     },
   ],
   certificates: {

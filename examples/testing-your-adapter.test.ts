@@ -36,14 +36,14 @@ const billing = {
 function createService() {
   const store = new InMemoryStore();
   const service = new EsadadService({
-    biller: { code: 999 },
+    biller: { code: 999 }, // dummy: use your biller code from E-SADAD
     services: [
       {
         serviceType: 'MOBILE_TOPUP',
         paymentType: 'PrePaid',
         currency: 'ILS',
         bankCode: 99,
-        iban: 'PS00XXXX000000000000000000000',
+        iban: 'PS00XXXX000000000000000000000', // dummy: use your settlement IBAN
       },
     ],
     certificates: {

@@ -49,10 +49,10 @@ Every example runs. Full list: [`examples/README.md`](../examples/README.md).
 
 | Word                             | Meaning                                                                       |
 | -------------------------------- | ----------------------------------------------------------------------------- |
-| **Biller**                       | You: the company receiving payments (for example the app, code `999`).        |
+| **Biller**                       | You: the company receiving payments (for example `999`).                      |
 | **E-SADAD**                      | The payment network that calls your server.                                   |
 | **Billing number** (`BillingNo`) | The customer's ID at your company, such as a mobile number or account number. |
-| **Service type** (`ServiceType`) | One product you sell through E-SADAD, for example `MOBILE_TOPUP`.            |
+| **Service type** (`ServiceType`) | One product you sell through E-SADAD, for example `MOBILE_TOPUP`.             |
 | **Prepaid**                      | The customer pays first, for example a top-up. Uses **PrepaidValidation**.    |
 | **Postpaid**                     | The customer pays a bill. Uses **BillPull**.                                  |
 | **GUID**                         | The unique ID of one E-SADAD request.                                         |

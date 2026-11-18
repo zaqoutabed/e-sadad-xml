@@ -7,9 +7,9 @@ import { EsadadService, InMemoryStore, normalizeMobileNumber } from 'e-sadad-xml
 import { createEsadadRouter } from 'e-sadad-xml/express';
 
 const esadad = new EsadadService({
-  biller: { code: 999, name: 'the app' },
+  biller: { code: 999, name: 'My Company' }, // dummy: use your biller code from E-SADAD
   services: [
-    { serviceType: 'MOBILE_TOPUP', paymentType: 'PrePaid', currency: 'ILS', bankCode: 99, iban: 'PS00XXXX000000000000000000000' },
+    { serviceType: 'MOBILE_TOPUP', paymentType: 'PrePaid', currency: 'ILS', bankCode: 99, iban: 'PS00XXXX000000000000000000000' }, // dummy values: use your own from E-SADAD
   ],
   certificates: {
     esadadCertificate: { path: process.env.ESADAD_CERT ?? 'dev-keys/esadad-dev.cer' },

@@ -41,7 +41,7 @@
 | 3   | **ReceivePaymentNotification** | **بعد** أن يدفع العميل              | "سجّل هذه الدفعة."                   |
 | 4   | **Availability**               | في أي وقت                           | لا شيء، المكتبة تجيب.               |
 
-💡 خدمتك شحن رصيد فقط (مثل التطبيق)؟ تحتاج **1 + 3** فقط.
+💡 خدمتك شحن رصيد فقط؟ تحتاج **1 + 3** فقط.
 
 ### ما تفعله المكتبة عنك
 
@@ -85,7 +85,7 @@ import { createEsadadRouter } from 'e-sadad-xml/express';
 
 const esadad = new EsadadService({
   // 1️⃣ من أنت
-  biller: { code: 999, name: 'the app' },
+  biller: { code: 999, name: 'My Company' }, // قيمة وهمية: ضع رمز المفوتر من إي-سداد
 
   // 2️⃣ ماذا تبيع
   services: [
@@ -94,7 +94,7 @@ const esadad = new EsadadService({
       paymentType: 'PrePaid',
       currency: 'ILS',
       bankCode: 99,
-      iban: 'PS00XXXX000000000000000000000',
+      iban: 'PS00XXXX000000000000000000000', // قيمة وهمية: ضع الآيبان الخاص بك
     },
   ],
 
@@ -274,7 +274,7 @@ throw new EsadadError({ code: 410, desc: 'Account Suspended', severity: 'Error' 
 
 ### اطلب من إي-سداد
 
-- [ ] رمز المفوتر (التطبيق: `999`)
+- [ ] رمز المفوتر (مثال: `999`)
 - [ ] رموز الخدمات ورمز البنك والـ IBAN
 - [ ] شهادة إي-سداد العامة (`.cer`)
 - [ ] أرقام رموز الأخطاء الرسمية

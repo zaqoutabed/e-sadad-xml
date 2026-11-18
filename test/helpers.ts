@@ -66,7 +66,7 @@ export const POSTPAID_SERVICE = {
 export function createService(adapter: BillerAdapter, overrides: Partial<EsadadConfig> = {}) {
   const store = new InMemoryStore();
   const service = new EsadadService({
-    biller: { code: 999, name: 'the app' },
+    biller: { code: 999, name: 'My Company' },
     services: [PREPAID_SERVICE, POSTPAID_SERVICE],
     certificates: {
       esadadCertificate: { data: esadadIdentity.certPem },

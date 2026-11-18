@@ -8,7 +8,7 @@
 
 ## 📨 Get from E-SADAD
 
-- [ ] Your **biller code** (the app: `999`)
+- [ ] Your **biller code** (example: `999`)
 - [ ] **ServiceType** codes, bank code and IBAN for each service
 - [ ] E-SADAD's **public certificate** (`.cer`)
 - [ ] Their official **result codes** (to replace the ⏳ defaults, see [Errors](06-errors.md))

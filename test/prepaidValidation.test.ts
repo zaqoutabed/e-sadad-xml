@@ -59,7 +59,7 @@ describe('PrepaidValidation', () => {
     ['non-numeric amount', { amount: 'abc' }, null, 7],
     ['hex amount', { amount: '0x10' }, null, 7],
     ['exponent amount', { amount: '1e2' }, null, 7],
-    ['wrong biller code', { billerCode: '999' }, null, 4],
+    ['wrong biller code', { billerCode: '111' }, null, 4],
     ['unknown service type', { serviceType: 'Nope' }, null, 5],
     ['post-paid service used for prepaid', { serviceType: 'Invoices' }, null, 5],
     ['wrong currency', { currency: 'USD' }, null, 6],
