@@ -18,7 +18,7 @@ export interface BillerInfo {
 
 /** One E-SADAD service (the "eSadad Services Configurations" table). */
 export interface ServiceConfig {
-  /** `ServiceType` code as registered with E-SADAD, for example `TELC_Recharge`. */
+  /** `ServiceType` code as registered with E-SADAD, for example `MOBILE_TOPUP`. */
   serviceType: string;
   nameAr?: string;
   nameEn?: string;

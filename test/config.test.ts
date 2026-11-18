@@ -11,18 +11,18 @@ writeFileSync(join(dir, 'ESADAD.cer'), esadadIdentity.certPem);
 writeFileSync(join(dir, 'biller.pfx'), billerIdentity.pfx);
 writeFileSync(join(dir, 'biller.key'), billerIdentity.keyPem);
 
-/** Rows exactly as the integration document names the columns (HatCard sheet values). */
+/** Rows exactly as the integration document names the columns (dummy values). */
 const tables = (): ConfigTables => ({
-  biller: { BillerCode: 344, BillerName: 'HatCard' },
+  biller: { BillerCode: 999, BillerName: 'My Company' },
   services: [
     {
-      ServiceTypeCode: 'TELC_Recharge',
-      ServiceNameArabic: 'رصيد هات كارد - بالشيكل',
-      ServiceNameEnglish: 'HatCard TopUp - ILS',
+      ServiceTypeCode: 'MOBILE_TOPUP',
+      ServiceNameArabic: 'شحن رصيد - بالشيكل',
+      ServiceNameEnglish: 'Mobile TopUp - ILS',
       PaymentType: 'PrePaid',
       Currency: 'ILS',
-      BankCode: 8,
-      IBAN: 'PS49PALS045431072990993100000',
+      BankCode: 99,
+      IBAN: 'PS00XXXX000000000000000000000',
       PartialPayment: false,
       LowerValue: 1,
       UpperValue: 1000,
@@ -31,7 +31,7 @@ const tables = (): ConfigTables => ({
   certificates: [
     { CertificateOwner: 'Esadad', CertificateType: 'Public', CertificatePath: 'ESADAD.cer' },
     {
-      CertificateOwner: 'HatCard',
+      CertificateOwner: 'My Company',
       CertificateType: 'Private',
       CertificatePath: 'biller.pfx',
       CertificatePassword: billerIdentity.password,
@@ -42,16 +42,16 @@ const tables = (): ConfigTables => ({
 describe('configFromTables', () => {
   it('maps the document columns to the library config', () => {
     const config = configFromTables(tables(), { baseDir: dir });
-    expect(config.biller).toEqual({ code: '344', name: 'HatCard' });
+    expect(config.biller).toEqual({ code: '999', name: 'My Company' });
     expect(config.services).toEqual([
       {
-        serviceType: 'TELC_Recharge',
-        nameAr: 'رصيد هات كارد - بالشيكل',
-        nameEn: 'HatCard TopUp - ILS',
+        serviceType: 'MOBILE_TOPUP',
+        nameAr: 'شحن رصيد - بالشيكل',
+        nameEn: 'Mobile TopUp - ILS',
         paymentType: 'PrePaid',
         currency: 'ILS',
-        bankCode: '8',
-        iban: 'PS49PALS045431072990993100000',
+        bankCode: '99',
+        iban: 'PS00XXXX000000000000000000000',
         partialPayment: false,
         lowerValue: 1,
         upperValue: 1000,
@@ -65,19 +65,19 @@ describe('configFromTables', () => {
 
   it('produces a config EsadadService accepts', () => {
     const service = new EsadadService({ ...configFromTables(tables(), { baseDir: dir }), adapter: {} });
-    expect(service.getService('TELC_Recharge')?.currency).toBe('ILS');
+    expect(service.getService('MOBILE_TOPUP')?.currency).toBe('ILS');
   });
 
   it('accepts database-style column names and string values', () => {
     const config = configFromTables(
       {
-        biller: [{ biller_code: '344' }],
+        biller: [{ biller_code: '999' }],
         services: [
           {
             service_type_code: 'Invoices',
             payment_type: 'postpaid',
             currency: 'jod',
-            bank_code: '8',
+            bank_code: '99',
             iban: 'PS00',
             partial_payment: '1',
             lower_value: '1.500',

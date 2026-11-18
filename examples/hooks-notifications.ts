@@ -19,9 +19,9 @@ async function sendEmail(subject: string, body: string): Promise<void> {
 const metrics = { record: (name: string, value: number, tags: Record<string, string>) => console.log(name, value, tags) };
 
 export const esadad = new EsadadService({
-  biller: { code: 344, name: 'HatCard' },
+  biller: { code: 999, name: 'My Company' }, // dummy: use your biller code from E-SADAD
   services: [
-    { serviceType: 'TELC_Recharge', paymentType: 'PrePaid', currency: 'ILS', bankCode: 8, iban: 'PS49PALS045431072990993100000' },
+    { serviceType: 'MOBILE_TOPUP', paymentType: 'PrePaid', currency: 'ILS', bankCode: 99, iban: 'PS00XXXX000000000000000000000' }, // dummy values: use your own from E-SADAD
   ],
   certificates: {
     esadadCertificate: { path: 'dev-keys/esadad-dev.cer' },
@@ -36,10 +36,7 @@ export const esadad = new EsadadService({
   },
   hooks: {
     async onPaymentPosted(trx) {
-      await sendSms(
-        toInternationalMobile(trx.billingNo),
-        `Your HatCard balance was topped up with ${trx.paidAmount} ${trx.currency}.`,
-      );
+      await sendSms(toInternationalMobile(trx.billingNo), `Your balance was topped up with ${trx.paidAmount} ${trx.currency}.`);
       await sendEmail('E-SADAD payment', `${trx.billingNo} paid ${trx.paidAmount} ${trx.currency} (ref ${trx.joebppsTrx})`);
     },
     onRequestCompleted(event) {

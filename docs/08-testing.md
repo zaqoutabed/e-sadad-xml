@@ -106,7 +106,7 @@ console.log(
   await signMessage(
     `<MFEP><MsgHeader><GUID>manual-1</GUID></MsgHeader>
   <MsgBody><BillingInfo><AcctInfo><BillingNo>0599123456</BillingNo></AcctInfo><DueAmt>10</DueAmt>
-  <ServiceTypeDetails><ServiceType>TELC_Recharge</ServiceType></ServiceTypeDetails></BillingInfo></MsgBody></MFEP>`,
+  <ServiceTypeDetails><ServiceType>MOBILE_TOPUP</ServiceType></ServiceTypeDetails></BillingInfo></MsgBody></MFEP>`,
     esadad,
   ),
 );

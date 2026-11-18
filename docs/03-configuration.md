@@ -13,7 +13,7 @@
 ### 1. `biller`: who you are
 
 ```ts
-biller: { code: 344, name: 'HatCard' }
+biller: { code: 999, name: 'My Company' } // dummy: use your biller code from E-SADAD
 ```
 
 - `code`: given to you by E-SADAD. Sent in every response.
@@ -26,13 +26,13 @@ One entry per E-SADAD **service type**:
 ```ts
 services: [
   {
-    serviceType: 'TELC_Recharge', // the code E-SADAD gave you
-    nameEn: 'HatCard TopUp - ILS', // optional
-    nameAr: 'رصيد هات كارد - بالشيكل', // optional
+    serviceType: 'MOBILE_TOPUP', // the code E-SADAD gave you
+    nameEn: 'Mobile TopUp - ILS', // optional
+    nameAr: 'شحن رصيد - بالشيكل', // optional
     paymentType: 'PrePaid', // 'PrePaid' or 'PostPaid'
     currency: 'ILS', // 'JOD' | 'USD' | 'ILS' | 'EUR' (or 'EURO')
-    bankCode: 8, // settlement bank
-    iban: 'PS49PALS045431072990993100000', // settlement account
+    bankCode: 99, // settlement bank
+    iban: 'PS00XXXX000000000000000000000', // dummy: use your settlement IBAN
     lowerValue: 1, // optional: minimum amount
     upperValue: 1000, // optional: maximum amount
     partialPayment: false, // optional, postpaid only
@@ -125,7 +125,7 @@ normalizeBillingNo: normalizeMobileNumber,
 
 // Different rules per service
 normalizeBillingNo: (billingNo, serviceType) =>
-  serviceType === 'TELC_Recharge'
+  serviceType === 'MOBILE_TOPUP'
     ? normalizeMobileNumber(billingNo)          // '' → rejected
     : /^\d{6,10}$/.test(billingNo) ? billingNo : null, // null → rejected
 ```
@@ -140,24 +140,26 @@ The integration document asks for **config tables** (Biller, Services, Certifica
 
 ### From a JSON file
 
+⚠️ The values in the file below are dummy values. Replace them with your own.
+
 📄 [`examples/config/esadad.config.json`](../examples/config/esadad.config.json) · [`examples/config-from-file.ts`](../examples/config-from-file.ts)
 
 ```json
 {
-  "biller": { "BillerCode": "344", "BillerName": "HatCard" },
+  "biller": { "BillerCode": "999", "BillerName": "My Company" },
   "services": [
     {
-      "ServiceTypeCode": "TELC_Recharge",
+      "ServiceTypeCode": "MOBILE_TOPUP",
       "PaymentType": "PrePaid",
       "Currency": "ILS",
-      "BankCode": 8,
-      "IBAN": "PS49PALS045431072990993100000"
+      "BankCode": 99,
+      "IBAN": "PS00XXXX000000000000000000000"
     }
   ],
   "certificates": [
     { "CertificateOwner": "Esadad", "CertificateType": "Public", "CertificatePath": "certs/ESADAD.cer" },
     {
-      "CertificateOwner": "HatCard",
+      "CertificateOwner": "My Company",
       "CertificateType": "Private",
       "CertificatePath": "certs/biller.pfx",
       "CertificatePassword": "env:BILLER_PFX_PASSWORD"
@@ -266,7 +268,7 @@ app.use('/api/v1/esadad', createEsadadRouter(esadad));
 `new EsadadService(...)` throws an **`EsadadConfigError`** immediately if something is wrong. For example:
 
 ```
-EsadadConfigError: Service "TELC_Recharge": unsupported currency "NIS"
+EsadadConfigError: Service "MOBILE_TOPUP": unsupported currency "NIS"
 EsadadConfigError: Cannot open biller PFX (wrong password or unsupported format)
 ```
 

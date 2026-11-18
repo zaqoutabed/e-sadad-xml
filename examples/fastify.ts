@@ -6,9 +6,9 @@ import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify';
 import { EsadadService, EsadadSigningError, InMemoryStore, type ApiName } from 'e-sadad-xml';
 
 const esadad = new EsadadService({
-  biller: { code: 344 },
+  biller: { code: 999 }, // dummy: use your biller code from E-SADAD
   services: [
-    { serviceType: 'TELC_Recharge', paymentType: 'PrePaid', currency: 'ILS', bankCode: 8, iban: 'PS49PALS045431072990993100000' },
+    { serviceType: 'MOBILE_TOPUP', paymentType: 'PrePaid', currency: 'ILS', bankCode: 99, iban: 'PS00XXXX000000000000000000000' }, // dummy values: use your own from E-SADAD
   ],
   certificates: {
     esadadCertificate: { path: 'dev-keys/esadad-dev.cer' },

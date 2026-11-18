@@ -30,7 +30,7 @@ If anything fails in steps 1–5, E-SADAD still gets a **signed error response**
   <MsgHeader>
     <TmStp>2026-11-12T10:00:00</TmStp>
     <GUID>…</GUID>
-    <TrsInf><SdrCode>344</SdrCode><ResTyp>…</ResTyp></TrsInf>
+    <TrsInf><SdrCode>999</SdrCode><ResTyp>…</ResTyp></TrsInf>
     <Result><ErrorCode>0</ErrorCode><ErrorDesc>Success</ErrorDesc><Severity>Info</Severity></Result>
   </MsgHeader>
   <MsgBody> …depends on the API… </MsgBody>
@@ -56,10 +56,10 @@ If anything fails in steps 1–5, E-SADAD still gets a **signed error response**
 ```xml
 <MsgBody>
   <BillingInfo>
-    <AcctInfo><BillingNo>970599123456</BillingNo><BillerCode>344</BillerCode></AcctInfo>
+    <AcctInfo><BillingNo>970599123456</BillingNo><BillerCode>999</BillerCode></AcctInfo>
     <DueAmt>20</DueAmt>
     <ValidationCode>VC-001</ValidationCode>
-    <ServiceTypeDetails><ServiceType>TELC_Recharge</ServiceType></ServiceTypeDetails>
+    <ServiceTypeDetails><ServiceType>MOBILE_TOPUP</ServiceType></ServiceTypeDetails>
   </BillingInfo>
 </MsgBody>
 ```
@@ -78,13 +78,13 @@ If anything fails in steps 1–5, E-SADAD still gets a **signed error response**
 <MsgBody>
   <BillingInfo>
     <Result><ErrorCode>0</ErrorCode><ErrorDesc>Success</ErrorDesc><Severity>Info</Severity></Result>
-    <AcctInfo><BillingNo>970599123456</BillingNo><BillerCode>344</BillerCode></AcctInfo>
+    <AcctInfo><BillingNo>970599123456</BillingNo><BillerCode>999</BillerCode></AcctInfo>
     <DueAmt>20.00</DueAmt>
     <Currency>ILS</Currency>
     <ValidationCode>VC-001</ValidationCode>
-    <ServiceTypeDetails><ServiceType>TELC_Recharge</ServiceType></ServiceTypeDetails>
+    <ServiceTypeDetails><ServiceType>MOBILE_TOPUP</ServiceType></ServiceTypeDetails>
     <SubPmts>
-      <SubPmt><Amount>20.00</Amount><SetBnkCode>8</SetBnkCode><AcctNo>PS49PALS045431072990993100000</AcctNo></SubPmt>
+      <SubPmt><Amount>20.00</Amount><SetBnkCode>99</SetBnkCode><AcctNo>PS00XXXX000000000000000000000</AcctNo></SubPmt>
     </SubPmts>
   </BillingInfo>
 </MsgBody>
@@ -126,7 +126,7 @@ Same shape, with `<Result><ErrorCode>408</ErrorCode><ErrorDesc>Invalid Billing N
   <BillsRec>
     <BillRec>
       <Result><ErrorCode>0</ErrorCode><ErrorDesc>Success</ErrorDesc><Severity>Info</Severity></Result>
-      <AcctInfo><BillingNo>CUST-1001</BillingNo><BillNo>INV-1</BillNo><BillerCode>344</BillerCode></AcctInfo>
+      <AcctInfo><BillingNo>CUST-1001</BillingNo><BillNo>INV-1</BillNo><BillerCode>999</BillerCode></AcctInfo>
       <BillStatus>BillNew</BillStatus>
       <DueAmount>45.500</DueAmount>
       <IssueDate>2026-11-01T00:00:00</IssueDate>
@@ -134,7 +134,7 @@ Same shape, with `<Result><ErrorCode>408</ErrorCode><ErrorDesc>Invalid Billing N
       <ServiceType>Invoices</ServiceType>
       <Currency>JOD</Currency>
       <PmtConst><AllowPart>false</AllowPart><Lower>1.000</Lower></PmtConst>
-      <SubPmts><SubPmt><Amount>45.500</Amount><SetBnkCode>8</SetBnkCode><AcctNo>PS00…</AcctNo></SubPmt></SubPmts>
+      <SubPmts><SubPmt><Amount>45.500</Amount><SetBnkCode>99</SetBnkCode><AcctNo>PS00…</AcctNo></SubPmt></SubPmts>
     </BillRec>
   </BillsRec>
 </MsgBody>
@@ -148,7 +148,7 @@ Same shape, with `<Result><ErrorCode>408</ErrorCode><ErrorDesc>Invalid Billing N
   <BillsRec>
     <BillRec>
       <Result><ErrorCode>408</ErrorCode><ErrorDesc>Invalid Billing Number</ErrorDesc><Severity>Error</Severity></Result>
-      <AcctInfo><BillingNo>NOPE</BillingNo><BillerCode>344</BillerCode></AcctInfo>
+      <AcctInfo><BillingNo>NOPE</BillingNo><BillerCode>999</BillerCode></AcctInfo>
       <ServiceType>Invoices</ServiceType>
     </BillRec>
   </BillsRec>
@@ -175,7 +175,7 @@ Same shape, with `<Result><ErrorCode>408</ErrorCode><ErrorDesc>Invalid Billing N
       <AcctInfo><BillingNo>0599123456</BillingNo><BillNo>B-1</BillNo></AcctInfo>
       <JOEBPPSTrx>9001</JOEBPPSTrx>
       <BankTrxID>BT-9001</BankTrxID>
-      <BankCode>8</BankCode>
+      <BankCode>99</BankCode>
       <PmtStatus>PmtNew</PmtStatus>
       <DueAmt>20.00</DueAmt>
       <PaidAmt>20.00</PaidAmt>
@@ -187,7 +187,7 @@ Same shape, with `<Result><ErrorCode>408</ErrorCode><ErrorDesc>Invalid Billing N
       <PaymentMethod>ACTDEB</PaymentMethod>
       <PaymentType>Prepaid</PaymentType>
       <Currency>ILS</Currency>
-      <ServiceTypeDetails><ServiceType>TELC_Recharge</ServiceType></ServiceTypeDetails>
+      <ServiceTypeDetails><ServiceType>MOBILE_TOPUP</ServiceType></ServiceTypeDetails>
       <SubPmts>…</SubPmts>
     </TrxInf>
     <!-- there can be several TrxInf -->

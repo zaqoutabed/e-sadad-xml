@@ -19,11 +19,11 @@ describe('BillPull', () => {
     expect(out.xml).toContain('<ResTyp>BILPULRS</ResTyp>');
     expect(out.xml).toContain('<RecCount>1</RecCount>');
     expect(out.xml).toContain(
-      '<AcctInfo><BillingNo>CUST-1</BillingNo><BillNo>INV-1</BillNo><BillerCode>344</BillerCode></AcctInfo><BillStatus>BillNew</BillStatus><DueAmount>12.500</DueAmount>',
+      '<AcctInfo><BillingNo>CUST-1</BillingNo><BillNo>INV-1</BillNo><BillerCode>999</BillerCode></AcctInfo><BillStatus>BillNew</BillStatus><DueAmount>12.500</DueAmount>',
     );
     expect(out.xml).toContain('<IssueDate>2026-11-01T08:00:00</IssueDate><DueDate>2026-12-01</DueDate>');
     expect(out.xml).toContain('<PmtConst><AllowPart>true</AllowPart><Lower>1.000</Lower></PmtConst>');
-    expect(out.xml).toContain('<SubPmt><Amount>12.500</Amount><SetBnkCode>8</SetBnkCode>');
+    expect(out.xml).toContain('<SubPmt><Amount>12.500</Amount><SetBnkCode>99</SetBnkCode>');
     expect(await verifyMessage(out.xml, esadadSide)).toEqual({ valid: true });
     expect(getBills.mock.calls[0]![0]).toMatchObject({ billingNo: 'CUST-1', serviceType: 'Invoices' });
   });
@@ -53,7 +53,7 @@ describe('BillPull', () => {
   it('rejects a prepaid service type', async () => {
     const getBills = vi.fn();
     const { service } = createService({ getBills });
-    const out = await service.billPull({ body: await esadadRequest('bp-4', RQ, body('X', 'TELC_Recharge')), guid: 'bp-4' });
+    const out = await service.billPull({ body: await esadadRequest('bp-4', RQ, body('X', 'MOBILE_TOPUP')), guid: 'bp-4' });
     expect(out.xml).toContain('<ErrorCode>5</ErrorCode>');
     expect(getBills).not.toHaveBeenCalled();
   });

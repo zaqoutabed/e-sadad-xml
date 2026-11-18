@@ -1,14 +1,14 @@
 {
-  "biller": { "BillerCode": "344", "BillerName": "HatCard" },
+  "biller": { "BillerCode": "999", "BillerName": "My Company" },
   "services": [
     {
-      "ServiceTypeCode": "TELC_Recharge",
-      "ServiceNameArabic": "رصيد هات كارد - بالشيكل",
-      "ServiceNameEnglish": "HatCard TopUp - ILS",
+      "ServiceTypeCode": "MOBILE_TOPUP",
+      "ServiceNameArabic": "شحن رصيد - بالشيكل",
+      "ServiceNameEnglish": "Mobile TopUp - ILS",
       "PaymentType": "PrePaid",
       "Currency": "ILS",
-      "BankCode": 8,
-      "IBAN": "PS49PALS045431072990993100000",
+      "BankCode": 99,
+      "IBAN": "PS00XXXX000000000000000000000",
       "PartialPayment": false,
       "LowerValue": 1,
       "UpperValue": 1000
@@ -17,7 +17,7 @@
   "certificates": [
     { "CertificateOwner": "Esadad", "CertificateType": "Public", "CertificatePath": "../../dev-keys/esadad-dev.cer" },
     {
-      "CertificateOwner": "HatCard",
+      "CertificateOwner": "My Company",
       "CertificateType": "Private",
       "CertificatePath": "../../dev-keys/biller-dev.pfx",
       "CertificatePassword": "env:BILLER_PFX_PASSWORD"

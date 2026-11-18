@@ -1,24 +1,24 @@
 /**
- * The same HatCard integration in plain JavaScript (CommonJS).
+ * The same prepaid top-up integration in plain JavaScript (CommonJS).
  *
  * Run:  ESADAD_CERT=./certs/ESADAD.cer BILLER_PFX=./certs/biller.pfx BILLER_PFX_PASSWORD=... \
- *       AVAILABILITY_TOKEN=... node examples/hatcard-javascript.cjs
+ *       AVAILABILITY_TOKEN=... node examples/prepaid-javascript.cjs
  */
 const express = require('express');
 const { EsadadService, InMemoryStore, normalizeMobileNumber } = require('e-sadad-xml');
 const { createEsadadRouter } = require('e-sadad-xml/express');
 
 const esadad = new EsadadService({
-  biller: { code: 344, name: 'HatCard' },
+  biller: { code: 999, name: 'My Company' }, // dummy: use your biller code from E-SADAD
   services: [
     {
-      serviceType: 'TELC_Recharge',
-      nameEn: 'HatCard TopUp - ILS',
-      nameAr: 'رصيد هات كارد - بالشيكل',
+      serviceType: 'MOBILE_TOPUP',
+      nameEn: 'Mobile TopUp - ILS',
+      nameAr: 'شحن رصيد - بالشيكل',
       paymentType: 'PrePaid',
       currency: 'ILS',
-      bankCode: 8,
-      iban: 'PS49PALS045431072990993100000',
+      bankCode: 99,
+      iban: 'PS00XXXX000000000000000000000', // dummy: use your settlement IBAN
     },
   ],
   certificates: {

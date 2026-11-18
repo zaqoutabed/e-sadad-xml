@@ -5,14 +5,18 @@ Every example here is type-checked and was run against the library.
 > **Start with:** `bash examples/dev-keys.sh` → creates `dev-keys/` (throw-away keys, never commit them).
 > Then run any example: `npx tsx examples/<file>.ts` or `node examples/<file>.cjs|.mjs`
 
+> ⚠️ **All biller codes, service types, bank codes and IBANs in the examples are dummy values**
+> (for example biller `999`, service `MOBILE_TOPUP`, bank `99`, IBAN `PS00XXXX…`).
+> Replace them with the values E-SADAD gives you. `config/esadad.config.json` uses the same dummy values.
+
 ---
 
 ## 🚀 Complete servers
 
 | File                                               | Language               | What it shows                                                                         |
 | -------------------------------------------------- | ---------------------- | ------------------------------------------------------------------------------------- |
-| [`hatcard-typescript.ts`](hatcard-typescript.ts)   | TypeScript             | HatCard prepaid top-up with Express, config from env vars                             |
-| [`hatcard-javascript.cjs`](hatcard-javascript.cjs) | JavaScript (`require`) | The same, in CommonJS                                                                 |
+| [`prepaid-typescript.ts`](prepaid-typescript.ts)   | TypeScript             | Prepaid top-up with Express, config from env vars                                     |
+| [`prepaid-javascript.cjs`](prepaid-javascript.cjs) | JavaScript (`require`) | The same, in CommonJS                                                                 |
 | [`esm-javascript.mjs`](esm-javascript.mjs)         | JavaScript (`import`)  | The same, in ES modules                                                               |
 | [`postpaid-billpull.ts`](postpaid-billpull.ts)     | TypeScript             | Post-paid bills: found, nothing due, not found, custom error                          |
 | [`multiple-services.ts`](multiple-services.ts)     | TypeScript             | ILS + USD prepaid and JOD invoices, with billing-number rules per service             |

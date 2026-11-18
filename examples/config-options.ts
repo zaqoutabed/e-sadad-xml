@@ -15,16 +15,16 @@ const logger: Logger = {
 
 const esadad = new EsadadService({
   // REQUIRED -------------------------------------------------------------------
-  biller: { code: 344, name: 'HatCard' },
+  biller: { code: 999, name: 'My Company' }, // dummy: use your biller code from E-SADAD
   services: [
     {
-      serviceType: 'TELC_Recharge',
-      nameEn: 'HatCard TopUp - ILS',
-      nameAr: 'رصيد هات كارد - بالشيكل',
+      serviceType: 'MOBILE_TOPUP',
+      nameEn: 'Mobile TopUp - ILS',
+      nameAr: 'شحن رصيد - بالشيكل',
       paymentType: 'PrePaid',
       currency: 'ILS',
-      bankCode: 8,
-      iban: 'PS49PALS045431072990993100000',
+      bankCode: 99,
+      iban: 'PS00XXXX000000000000000000000', // dummy: use your settlement IBAN
       partialPayment: false,
       lowerValue: 1,
       upperValue: 1000,

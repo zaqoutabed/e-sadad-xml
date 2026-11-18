@@ -5,7 +5,7 @@
 import { createServer } from 'node:http';
 import { EsadadService, EsadadSigningError, type ApiName } from 'e-sadad-xml';
 
-declare const esadad: EsadadService; // built as in hatcard-typescript.ts
+declare const esadad: EsadadService; // built as in prepaid-typescript.ts
 
 const routes: Record<string, ApiName> = {
   '/api/v1/esadad/BillPull': 'BillPull',

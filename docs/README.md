@@ -37,8 +37,8 @@ Every example runs. Full list: [`examples/README.md`](../examples/README.md).
 
 | Example                                                        | Shows                                                 |
 | -------------------------------------------------------------- | ----------------------------------------------------- |
-| [`hatcard-typescript.ts`](../examples/hatcard-typescript.ts)   | A complete prepaid integration (TypeScript + Express) |
-| [`hatcard-javascript.cjs`](../examples/hatcard-javascript.cjs) | The same in plain JavaScript (`require`)              |
+| [`prepaid-typescript.ts`](../examples/prepaid-typescript.ts)   | A complete prepaid integration (TypeScript + Express) |
+| [`prepaid-javascript.cjs`](../examples/prepaid-javascript.cjs) | The same in plain JavaScript (`require`)              |
 | [`esm-javascript.mjs`](../examples/esm-javascript.mjs)         | Plain JavaScript with `import`                        |
 | [`postpaid-billpull.ts`](../examples/postpaid-billpull.ts)     | Post-paid bills (every BillPull outcome)              |
 | [`simulate-esadad.ts`](../examples/simulate-esadad.ts)         | Pretend to be E-SADAD and test your server            |
@@ -49,10 +49,10 @@ Every example runs. Full list: [`examples/README.md`](../examples/README.md).
 
 | Word                             | Meaning                                                                       |
 | -------------------------------- | ----------------------------------------------------------------------------- |
-| **Biller**                       | You: the company receiving payments (for example HatCard, code `344`).        |
+| **Biller**                       | You: the company receiving payments (for example `999`).                      |
 | **E-SADAD**                      | The payment network that calls your server.                                   |
 | **Billing number** (`BillingNo`) | The customer's ID at your company, such as a mobile number or account number. |
-| **Service type** (`ServiceType`) | One product you sell through E-SADAD, for example `TELC_Recharge`.            |
+| **Service type** (`ServiceType`) | One product you sell through E-SADAD, for example `MOBILE_TOPUP`.             |
 | **Prepaid**                      | The customer pays first, for example a top-up. Uses **PrepaidValidation**.    |
 | **Postpaid**                     | The customer pays a bill. Uses **BillPull**.                                  |
 | **GUID**                         | The unique ID of one E-SADAD request.                                         |
