@@ -26,6 +26,7 @@
 | Go to production                    | [10. Going live checklist](10-going-live.md)                                           | ⏱ 3 min     |
 | Fix a problem                       | [11. Troubleshooting](11-troubleshooting.md)                                           | ⏱ as needed |
 | Look up a function                  | [12. Reference](12-reference.md)                                                       | ⏱ as needed |
+| Serve the Authentication API        | [13. Authentication API](13-authentication.md)                                         | ⏱ 5 min     |
 
 👉 **New here?** Read 1 → 2 → 4. That's enough to build a working integration.
 

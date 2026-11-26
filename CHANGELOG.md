@@ -2,6 +2,23 @@
 
 All notable changes to this project. The format follows [Keep a Changelog](https://keepachangelog.com/) and the project uses [semantic versioning](https://semver.org/).
 
+## [0.4.0] - 2026-11-26
+
+### Added
+
+- **Authentication API** (`POST /authentication`), from the E-SADAD Authentication API document. Set `authentication: { user, secret }`:
+  - verifies E-SADAD's signature (RSA SHA-256 PKCS#1 v1.5 over the UTF-8 `data` values joined with `|`; compact JSON is accepted too);
+  - rejects a `tranTimestamp` more than 10 minutes from the server clock;
+  - checks the shared credentials in constant time;
+  - answers with a signed token (`SHA-256(user:tranTimestamp:UUID)`, 7 days).
+    Errors are signed JSON (400, 401, 500).
+- `esadad.authenticate(body)`, `esadad.verifyAccessToken(token)`, `esadad.authenticationEnabled`.
+- `AccessTokenStore` interface and `InMemoryAccessTokenStore`. Stores receive only the SHA-256 hash of each token.
+- Express: the `/authentication` route (only when configured) and the `requireAccessToken` option, which requires `Authorization: Bearer <token>` on the XML routes.
+- `signData`/`verifyData` take an optional `encoding` (`'utf16le'` default, `'utf8'`); `CertificateSigner` has `signUtf8`/`verifyUtf8`; `MessageSigner` has optional `signUtf8`/`verifyUtf8`.
+- `authSigningString()` and `hashAccessToken()` exports.
+- Guide page `docs/13-authentication.md` and an Arabic section.
+
 ## [0.3.0] - 2026-11-15
 
 ### Fixed

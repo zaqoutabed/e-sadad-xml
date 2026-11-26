@@ -61,6 +61,10 @@ const esadad = new EsadadService({
   adapter,
   store: new InMemoryStore(), // use a database store in production (see examples/sql)
   availabilityToken: env('AVAILABILITY_TOKEN'),
+  // Authentication API (POST /authentication): on only when the shared user and secret are set.
+  authentication: process.env.ESADAD_AUTH_USER
+    ? { user: process.env.ESADAD_AUTH_USER, secret: env('ESADAD_AUTH_SECRET') }
+    : undefined,
   logger: console,
 });
 

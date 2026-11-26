@@ -8,6 +8,7 @@ Node.js library for **E-SADAD biller integration**. It implements the endpoints 
 | **PrepaidValidation**          | Validate a pre-paid account and amount before payment | `BILRPREPADVALRQ` → `BILRPREPADVALRS` |
 | **ReceivePaymentNotification** | Receive a payment and post it to your billing system  | `BLRPMTNTFRQ` → `BLRPMTNTFRS`         |
 | **Availability**               | Health check (`GET /availability?token=…`, JSON)      | —                                     |
+| **Authentication**             | Issue a token for the shared user and secret (JSON)   | `POST /authentication`, signed JSON   |
 
 It takes care of the E-SADAD protocol: XML parsing and building, `MsgBody` signature verification and signing (RSA-SHA256, compatible byte-for-byte with the E-SADAD reference implementation), request and response logging, idempotent payment posting, currency decimals and error responses. You write only the part that talks to your billing system.
 
@@ -165,6 +166,7 @@ app.listen(3000);
 | `credentials`        |             | `{ username, password }`. When set, the `username`/`password` query parameters must match.                                                                              |
 | `availabilityToken`  |             | Shared token for `/availability`. Without it, the endpoint answers 503.                                                                                                 |
 | `healthCheck`        |             | `() => boolean \| Promise<boolean>`, used by `/availability` (for example, ping your database).                                                                         |
+| `authentication`     |             | `{ user, secret, tokenStore?, ... }`. Enables `POST /authentication`. See [Authentication API](#authentication-api).                                                    |
 | `resultCodes`        |             | Override result codes, for example `{ INVALID_AMOUNT: { code: 13, desc: 'Invalid Amount', severity: 'Error' } }`.                                                       |
 | `maxBodyBytes`       |             | Maximum request size. Default 512 KB.                                                                                                                                   |
 | `adapterTimeoutMs`   |             | Time limit (ms) for the read-only adapter calls `getBills` and `validatePrepaid`. Default: no limit. Never applied to `postPayment`.                                    |
@@ -261,16 +263,17 @@ Failures writing the transaction log are logged and do not change the response. 
 
 `createEsadadRouter(service, options?)` registers these routes (relative to where you mount it):
 
-| Method | Default path                          | Query                            |
-| ------ | ------------------------------------- | -------------------------------- |
-| POST   | `/BillPull`                           | `guid`, `username`?, `password`? |
-| POST   | `/prepaid/PrepaidValidation`          | same                             |
-| POST   | `/Payment/ReceivePaymentNotification` | same                             |
-| GET    | `/availability`                       | `token`                          |
+| Method | Default path                          | Query                                             |
+| ------ | ------------------------------------- | ------------------------------------------------- |
+| POST   | `/BillPull`                           | `guid`, `username`?, `password`?                  |
+| POST   | `/prepaid/PrepaidValidation`          | same                                              |
+| POST   | `/Payment/ReceivePaymentNotification` | same                                              |
+| GET    | `/availability`                       | `token`                                           |
+| POST   | `/authentication`                     | JSON body (only with `authentication` configured) |
 
 Mount it under a versioned prefix, as the integration document recommends: `app.use('/api/v1/esadad', router)`.
 
-Options: `paths` (rename a route, or set it to `false` to disable it) and `bodyLimit` (default `512kb`).
+Options: `paths` (rename a route, or set it to `false` to disable it), `bodyLimit` (default `512kb`) and `requireAccessToken` (require `Authorization: Bearer <token>` from `/authentication` on the XML routes; default `false`).
 
 The XML endpoints always answer **HTTP 200** with `Content-Type: application/xml`. Errors are reported inside the signed XML. The only exceptions are 413 (body too large) and 500 (response could not be signed); both have a plain-text body with no details.
 
@@ -356,6 +359,24 @@ const result = await requestAvailability({ baseUrl: 'https://esadad.example.com'
 // never throws: network errors and timeouts come back as { status: 'error', ... }
 ```
 
+## Authentication API
+
+`POST /authentication`, served when `authentication` is configured. E-SADAD sends a shared user and secret, signed with its private key; you answer with a token, signed with yours. Full guide: [`docs/13-authentication.md`](docs/13-authentication.md).
+
+```ts
+authentication: { user: process.env.ESADAD_AUTH_USER!, secret: process.env.ESADAD_AUTH_SECRET!, tokenStore },
+```
+
+```json
+{ "data": { "user": "u", "secret": "s", "tranTimestamp": "2025-05-07T12:34:56Z" }, "signature": "…" }
+{ "data": { "token": "d125…a23b", "expiryDate": "2025-05-14T12:34:56Z", "tranTimestamp": "2025-05-07T12:34:56Z" }, "signature": "…" }
+```
+
+- **Signatures:** RSA SHA-256 PKCS#1 v1.5, Base64, over the `data` values joined with `|` (`u|s|2025-05-07T12:34:56Z`) in UTF-8. Requests signed over compact JSON are accepted too; set `responseSignatureFormat: 'json'` if E-SADAD expects JSON on responses.
+- **Checks:** signature, `tranTimestamp` within 10 minutes of the server clock (`maxClockSkewMs`), then user and secret in constant time. Errors are signed JSON: 400 `Invalid request`, 401 `Invalid signature` / `Request expired` / `Invalid user credentials`, 500 `Internal error`.
+- **Token:** lowercase hex `SHA-256(user:tranTimestamp:UUID)`, valid 7 days (`tokenTtlMs`). The `tokenStore` receives only its SHA-256 hash. Default: in memory.
+- **Using the token:** `esadad.verifyAccessToken(token)`, or `requireAccessToken: true` on the router for `Authorization: Bearer` tokens.
+
 ## Using without Express
 
 `EsadadService` does not depend on any framework. Pass it the raw body and query values, and send back `xml` with status 200:
@@ -364,6 +385,7 @@ const result = await requestAvailability({ baseUrl: 'https://esadad.example.com'
 const { xml } = await esadad.handle('PrepaidValidation', { body: rawBody, guid, username, password });
 // or: esadad.billPull(...), esadad.prepaidValidation(...), esadad.receivePaymentNotification(...)
 const { statusCode, body } = await esadad.availability(token);
+const auth = await esadad.authenticate(rawJsonBody); // { statusCode, body }: send body as JSON
 ```
 
 `handle` never throws, except `EsadadSigningError` when the response cannot be signed; answer 500 in that case. A complete `node:http` example is in [`examples/without-express.ts`](examples/without-express.ts). The same approach works for Fastify, NestJS and Koa.
@@ -403,6 +425,7 @@ The reference material did not include these, so they follow standard MFEP conve
 - The BillPull request and response layout and `BILPULRS`: `src/messages/billPull.ts`.
 - The result codes marked "library default" above: `src/constants.ts`, or `config.resultCodes`.
 - The request types (`ReqTyp`) are not enforced, so a different value does not break anything.
+- Authentication API: the document shows two formats for the signed response text (pipe-joined values, and compact JSON), and does not say how the token is sent on later calls. Defaults: pipe, and no token check (`requireAccessToken`).
 
 ---
 
@@ -457,7 +480,8 @@ src/
 │   ├── billPullHandler.ts
 │   ├── prepaidValidationHandler.ts
 │   ├── paymentNotificationHandler.ts
-│   └── availabilityHandler.ts
+│   ├── availabilityHandler.ts
+│   └── authenticationHandler.ts  JSON Authentication API: verify, issue token, sign answer
 │
 ├── messages/                 XML layout only: parse a request, build a response body
 │   ├── envelope.ts           MFEP / MsgHeader / Result / MsgFooter
@@ -468,7 +492,7 @@ src/
 │
 ├── crypto/                   Keys and signatures
 │   ├── keys.ts               Load .cer/.pem public keys, .pfx/.pem private keys
-│   ├── signature.ts          RSA-SHA256 over UTF-16LE, CertificateSigner
+│   ├── signature.ts          RSA-SHA256 over UTF-16LE (XML) or UTF-8 (JSON), CertificateSigner
 │   └── message.ts            signMessage / verifyMessage for whole XML messages
 │
 ├── xml/                      Generic XML tools
@@ -477,6 +501,7 @@ src/
 │   └── c14n.ts               Canonical XML + MsgBody string to sign
 │
 ├── storage/memory.ts         InMemoryStore
+├── storage/accessTokenMemory.ts  InMemoryAccessTokenStore (Authentication API tokens)
 ├── client/availabilityClient.ts
 ├── adapters/express.ts       Express router (separate entry: e-sadad-xml/express)
 └── utils/                    currency.ts, phone.ts, datetime.ts

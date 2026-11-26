@@ -36,6 +36,10 @@ const esadad = new EsadadService({
   },
   store: new InMemoryStore(),
   availabilityToken: process.env.AVAILABILITY_TOKEN,
+  // Authentication API (POST /authentication): on only when the shared user and secret are set.
+  authentication: process.env.ESADAD_AUTH_USER
+    ? { user: process.env.ESADAD_AUTH_USER, secret: process.env.ESADAD_AUTH_SECRET }
+    : undefined,
   logger: console,
 });
 
