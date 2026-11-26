@@ -102,7 +102,80 @@ export interface EsadadConfig {
   availabilityToken?: string;
   /** Extra health check used by `/availability`. Throw or return `false` to report the service as unavailable. */
   healthCheck?: () => boolean | void | Promise<boolean | void>;
+  /** Authentication API (`POST /authentication`). Leave it out to disable the endpoint. */
+  authentication?: AuthenticationConfig;
   logger?: Logger;
+}
+
+// ---------------------------------------------------------------------------
+// Authentication API
+// ---------------------------------------------------------------------------
+
+/**
+ * How the signed text is built from the `data` object:
+ * - `pipe`: the values in their original order, joined with `|`
+ *   (`user|secret|2025-05-07T12:34:56Z`)
+ * - `json`: the object as compact JSON (`{"user":"...","secret":"...",...}`)
+ */
+export type AuthSignatureFormat = 'pipe' | 'json';
+
+export interface AuthenticationConfig {
+  /** Shared user name you gave to E-SADAD. */
+  user: string;
+  /** Shared secret you gave to E-SADAD. */
+  secret: string;
+  /** How long an issued token is valid, in milliseconds. Defaults to 7 days. */
+  tokenTtlMs?: number;
+  /**
+   * Largest accepted difference between `tranTimestamp` and the server clock, in
+   * milliseconds, so a captured request cannot be replayed later. Defaults to
+   * 10 minutes. `false` turns the check off.
+   */
+  maxClockSkewMs?: number | false;
+  /** Signed-text formats accepted on requests, tried in order. Defaults to `['pipe', 'json']`. */
+  requestSignatureFormats?: AuthSignatureFormat[];
+  /** Signed-text format of responses. Defaults to `pipe`. */
+  responseSignatureFormat?: AuthSignatureFormat;
+  /** Where issued tokens are kept. Defaults to an in-memory store (tokens are lost on restart). */
+  tokenStore?: AccessTokenStore;
+}
+
+/** An issued access token. Only the SHA-256 hash of the token is stored, never the token itself. */
+export interface AccessTokenRecord {
+  /** Lowercase hex SHA-256 of the token. */
+  tokenHash: string;
+  user: string;
+  issuedAt: Date;
+  expiresAt: Date;
+  /** `tranTimestamp` of the request that created the token. */
+  tranTimestamp: string;
+}
+
+/** Persistence for access tokens. Implement it with your database to share tokens between servers. */
+export interface AccessTokenStore {
+  saveAccessToken(record: AccessTokenRecord): void | Promise<void>;
+  /** The record for this token hash, or `undefined`/`null`. Expired records may be returned; they are rejected. */
+  findAccessToken(tokenHash: string): AccessTokenRecord | null | undefined | Promise<AccessTokenRecord | null | undefined>;
+}
+
+/** Signed JSON body of every Authentication API response. */
+export interface AuthenticationResponseBody {
+  data: AuthenticationSuccessData | AuthenticationErrorData;
+  signature: string;
+}
+
+export interface AuthenticationSuccessData {
+  token: string;
+  /** ISO 8601 UTC, for example `2025-05-14T12:34:56Z`. */
+  expiryDate: string;
+  tranTimestamp: string;
+}
+
+export interface AuthenticationErrorData {
+  status: 'error';
+  message: string;
+  error_code: number;
+  tranTimestamp: string;
 }
 
 /** Data passed to `hooks.onRequestCompleted`. */
@@ -140,6 +213,10 @@ export interface MessageSigner {
   sign(canonicalMsgBody: string): string | Promise<string>;
   /** Verifies a base64 signature against the canonical `MsgBody` string. */
   verify(canonicalMsgBody: string, signatureBase64: string): boolean | Promise<boolean>;
+  /** Signs UTF-8 text. Required only when `authentication` is configured. */
+  signUtf8?(data: string): string | Promise<string>;
+  /** Verifies a signature over UTF-8 text. Required only when `authentication` is configured. */
+  verifyUtf8?(data: string, signatureBase64: string): boolean | Promise<boolean>;
 }
 
 // ---------------------------------------------------------------------------

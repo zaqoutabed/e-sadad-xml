@@ -8,10 +8,13 @@
  *      AVAILABILITY_TOKEN=dev-token node examples/prepaid-javascript.cjs
  * 3. npx tsx examples/simulate-esadad.ts
  *
+ * To also test the Authentication API, give the server and this script the same
+ * ESADAD_AUTH_USER and ESADAD_AUTH_SECRET.
+ *
  * It sends signed requests (like E-SADAD does) and checks your server's signatures.
  */
 import { randomUUID } from 'node:crypto';
-import { CertificateSigner, requestAvailability, signMessage, verifyMessage } from 'e-sadad-xml';
+import { authSigningString, CertificateSigner, requestAvailability, signMessage, verifyMessage } from 'e-sadad-xml';
 
 const BASE = process.env.SERVER_URL ?? 'http://localhost:3000/api/v1/esadad';
 
@@ -60,9 +63,31 @@ const payment = (trx: string, billingNo: string, amount: string) => `<MsgBody><T
   <Currency>ILS</Currency><ServiceTypeDetails><ServiceType>MOBILE_TOPUP</ServiceType></ServiceTypeDetails>
 </TrxInf></Transactions></MsgBody>`;
 
+/** Authentication API: a signed JSON request, then checks the signed answer. */
+async function authenticate(user: string, secret: string) {
+  const data = { user, secret, tranTimestamp: new Date().toISOString().replace(/\.\d{3}Z$/, 'Z') };
+  const signature = await esadad.signUtf8(authSigningString(data, 'pipe'));
+  const res = await fetch(`${BASE}/authentication`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ data, signature }),
+  });
+  const body = (await res.json()) as { data: Record<string, unknown>; signature: string };
+  const valid = esadad.verifyUtf8(authSigningString(body.data, 'pipe'), body.signature);
+  console.log(`  HTTP ${res.status}  signature ${valid ? 'VALID' : 'INVALID'}  ${JSON.stringify(body.data)}`);
+}
+
 // --- Scenarios ---------------------------------------------------------------------
 // Wrapped in main() so tsx can run this file as CommonJS (no top-level await).
 async function main(): Promise<void> {
+  const authUser = process.env.ESADAD_AUTH_USER;
+  if (authUser) {
+    console.log('0) Authentication: right secret, then wrong secret (expect 401 Invalid user credentials)');
+    await authenticate(authUser, process.env.ESADAD_AUTH_SECRET ?? '');
+    await authenticate(authUser, 'wrong-secret');
+    console.log();
+  }
+
   console.log('1) Availability');
   console.log(
     await requestAvailability({

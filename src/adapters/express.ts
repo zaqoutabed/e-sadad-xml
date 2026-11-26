@@ -5,6 +5,8 @@ import type { ApiName } from '../constants';
 import { ApiNames } from '../constants';
 import type { EsadadService } from '../service';
 import type { HandlerInput } from '../types';
+import { EsadadConfigError } from '../errors';
+import { MAX_AUTH_BODY_BYTES } from '../handlers/authenticationHandler';
 import { decodeXmlBody } from '../xml/encoding';
 
 export interface EsadadRouterPaths {
@@ -12,6 +14,7 @@ export interface EsadadRouterPaths {
   prepaidValidation?: string | false;
   receivePaymentNotification?: string | false;
   availability?: string | false;
+  authentication?: string | false;
 }
 
 export interface EsadadRouterOptions {
@@ -22,10 +25,17 @@ export interface EsadadRouterOptions {
    * - `/prepaid/PrepaidValidation`
    * - `/Payment/ReceivePaymentNotification`
    * - `/availability`
+   * - `/authentication` (served only when the service has `authentication` configured)
    */
   paths?: EsadadRouterPaths;
-  /** Body size limit passed to `express.text`. Defaults to `512kb`. */
+  /** Body size limit for the XML routes. Defaults to `512kb`. */
   bodyLimit?: string | number;
+  /**
+   * Require `Authorization: Bearer <token>` on the XML routes, with a token from
+   * `POST /authentication`. Requests without a valid token get HTTP 401.
+   * Defaults to `false`; turn it on only if E-SADAD sends the token.
+   */
+  requireAccessToken?: boolean;
 }
 
 export const defaultPaths: Required<EsadadRouterPaths> = {
@@ -33,10 +43,12 @@ export const defaultPaths: Required<EsadadRouterPaths> = {
   prepaidValidation: '/prepaid/PrepaidValidation',
   receivePaymentNotification: '/Payment/ReceivePaymentNotification',
   availability: '/availability',
+  authentication: '/authentication',
 };
 
 const STATUS_TEXT: Record<number, string> = {
   400: 'Bad Request',
+  401: 'Unauthorized',
   413: 'Payload Too Large',
   415: 'Unsupported Media Type',
   500: 'Internal Server Error',
@@ -63,6 +75,11 @@ function requestCharset(req: Request): string | undefined {
   return /;\s*charset\s*=\s*"?([^";\s]+)/i.exec(req.headers['content-type'] ?? '')?.[1];
 }
 
+/** Token from `Authorization: Bearer <token>`, if any. */
+function bearerToken(req: Request): string | undefined {
+  return /^Bearer\s+(\S+)\s*$/i.exec(req.headers.authorization ?? '')?.[1];
+}
+
 function toHandlerInput(req: Request): HandlerInput {
   return {
     // Throws UnsupportedCharsetError (HTTP 415) for a charset that cannot be decoded.
@@ -87,8 +104,16 @@ export function createEsadadRouter(service: EsadadService, options: EsadadRouter
   // in UTF-8 or UTF-16. The bytes are decoded by decodeXmlBody.
   const readBody = express.raw({ type: () => true, limit: options.bodyLimit ?? '512kb' });
 
+  if (options.requireAccessToken && !service.authenticationEnabled) {
+    throw new EsadadConfigError('requireAccessToken needs the service to have authentication configured');
+  }
+
   const xmlRoute = (api: ApiName) => async (req: Request, res: Response, next: NextFunction) => {
     try {
+      if (options.requireAccessToken && !(await service.verifyAccessToken(bearerToken(req)))) {
+        res.status(401).type('text/plain').send(STATUS_TEXT[401]);
+        return;
+      }
       const output = await service.handle(api, toHandlerInput(req));
       res.status(200).type('application/xml; charset=utf-8').send(output.xml);
     } catch (err) {
@@ -105,6 +130,19 @@ export function createEsadadRouter(service: EsadadService, options: EsadadRouter
     router.get(paths.availability, async (req: Request, res: Response, next: NextFunction) => {
       try {
         const { statusCode, body } = await service.availability(queryValue(req, 'token'));
+        res.status(statusCode).json(body);
+      } catch (err) {
+        next(err);
+      }
+    });
+  }
+
+  if (paths.authentication && service.authenticationEnabled) {
+    // Raw bytes: the service parses the JSON itself so even a malformed body gets a signed JSON error.
+    const readJson = express.raw({ type: () => true, limit: MAX_AUTH_BODY_BYTES });
+    router.post(paths.authentication, readJson, async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const { statusCode, body } = await service.authenticate(Buffer.isBuffer(req.body) ? req.body : '');
         res.status(statusCode).json(body);
       } catch (err) {
         next(err);

@@ -24,6 +24,9 @@ Throws `EsadadConfigError` if the config is invalid. → [Configuration](03-conf
 | `receivePaymentNotification(input)` | `Promise<HandlerOutput>`        |                                                                            |
 | `handle(api, input)`                | `Promise<HandlerOutput>`        | `api`: `'BillPull' \| 'PrepaidValidation' \| 'ReceivePaymentNotification'` |
 | `availability(token)`               | `Promise<{ statusCode, body }>` | JSON body for `/availability`                                              |
+| `authenticate(body)`                | `Promise<{ statusCode, body }>` | Signed JSON for `/authentication` → [Authentication](13-authentication.md) |
+| `verifyAccessToken(token)`          | `Promise<boolean>`              | `true` for an issued, unexpired token                                      |
+| `authenticationEnabled`             | `boolean`                       | `authentication` is configured                                             |
 | `getService(serviceType)`           | `ServiceConfig \| undefined`    |                                                                            |
 | `resultCodes`                       | `ResultCodes`                   | the codes in use (defaults + overrides)                                    |
 
@@ -41,10 +44,10 @@ The XML methods never throw, except **`EsadadSigningError`** (the key can't sign
 
 ## 🛣️ Express (`e-sadad-xml/express`)
 
-| Export                                                | What                                                                        |
-| ----------------------------------------------------- | --------------------------------------------------------------------------- |
-| `createEsadadRouter(service, { paths?, bodyLimit? })` | Express `Router` with all routes                                            |
-| `defaultPaths`                                        | `{ billPull, prepaidValidation, receivePaymentNotification, availability }` |
+| Export                                                                     | What                                                                                        |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `createEsadadRouter(service, { paths?, bodyLimit?, requireAccessToken? })` | Express `Router` with all routes                                                            |
+| `defaultPaths`                                                             | `{ billPull, prepaidValidation, receivePaymentNotification, availability, authentication }` |
 
 ---
 
@@ -60,18 +63,21 @@ The XML methods never throw, except **`EsadadSigningError`** (the key can't sign
 
 ## 🔐 Signing
 
-| Export                                                                  | What                                                                                                                                |
-| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `new CertificateSigner(certificates)`                                   | `MessageSigner` from `.cer` + `.pfx`/`.pem`                                                                                         |
-| `signMessage(xml, signer)`                                              | Returns the XML with `MsgFooter/Security/Signature` filled in                                                                       |
-| `verifyMessage(xml, signer)`                                            | `{ valid: boolean, reason?: 'missing-signature' \| 'invalid-signature' }`                                                           |
-| `canonicalMsgBody(xmlOrDoc)`                                            | The exact string that gets signed (for debugging)                                                                                   |
-| `canonicalize(element)`                                                 | Canonical XML (C14N) of a DOM element                                                                                               |
-| `decodeXmlBody(buffer, charset?)`                                       | Raw request bytes → string. Detects UTF-8/UTF-16 from the bytes; throws `UnsupportedCharsetError` (HTTP 415) for an unknown charset |
-| `signData(text, privateKey)` / `verifyData(text, signature, publicKey)` | Low-level RSA-SHA256 over UTF-16LE                                                                                                  |
-| `loadPublicKey(source)`                                                 | From `.cer`/`.crt` (PEM or DER) or a public key                                                                                     |
-| `loadPfxPrivateKey(source, password)`                                   | From `.pfx`/`.p12`                                                                                                                  |
-| `loadPemPrivateKey(source, passphrase?)`                                | From PEM (PKCS#1/PKCS#8) or DER                                                                                                     |
+| Export                                                                                        | What                                                                                                                                |
+| --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `new CertificateSigner(certificates)`                                                         | `MessageSigner` from `.cer` + `.pfx`/`.pem`                                                                                         |
+| `signMessage(xml, signer)`                                                                    | Returns the XML with `MsgFooter/Security/Signature` filled in                                                                       |
+| `verifyMessage(xml, signer)`                                                                  | `{ valid: boolean, reason?: 'missing-signature' \| 'invalid-signature' }`                                                           |
+| `canonicalMsgBody(xmlOrDoc)`                                                                  | The exact string that gets signed (for debugging)                                                                                   |
+| `canonicalize(element)`                                                                       | Canonical XML (C14N) of a DOM element                                                                                               |
+| `decodeXmlBody(buffer, charset?)`                                                             | Raw request bytes → string. Detects UTF-8/UTF-16 from the bytes; throws `UnsupportedCharsetError` (HTTP 415) for an unknown charset |
+| `signData(text, privateKey, encoding?)` / `verifyData(text, signature, publicKey, encoding?)` | Low-level RSA-SHA256. `encoding`: `'utf16le'` (default, XML APIs) or `'utf8'` (Authentication API)                                  |
+| `signer.signUtf8(text)` / `signer.verifyUtf8(text, signature)`                                | UTF-8 signing on `CertificateSigner` (needed for `authentication`)                                                                  |
+| `authSigningString(data, 'pipe' \| 'json')`                                                   | The text signed for an Authentication API `data` object                                                                             |
+| `hashAccessToken(token)`                                                                      | The SHA-256 hex a token store receives                                                                                              |
+| `loadPublicKey(source)`                                                                       | From `.cer`/`.crt` (PEM or DER) or a public key                                                                                     |
+| `loadPfxPrivateKey(source, password)`                                                         | From `.pfx`/`.p12`                                                                                                                  |
+| `loadPemPrivateKey(source, passphrase?)`                                                      | From PEM (PKCS#1/PKCS#8) or DER                                                                                                     |
 
 `source` = `{ path: string }` or `{ data: string | Buffer }`.
 
@@ -90,10 +96,12 @@ The XML methods never throw, except **`EsadadSigningError`** (the key can't sign
 
 ## 🗃️ Storage
 
-| Export               | What                                                                  |
-| -------------------- | --------------------------------------------------------------------- |
-| `InMemoryStore`      | Dev/test store. Has `.transactions` and `.payments` arrays.           |
-| `EsadadStore` (type) | Interface for your own store → [Database store](07-database-store.md) |
+| Export                     | What                                                                        |
+| -------------------------- | --------------------------------------------------------------------------- |
+| `InMemoryStore`            | Dev/test store. Has `.transactions` and `.payments` arrays.                 |
+| `EsadadStore` (type)       | Interface for your own store → [Database store](07-database-store.md)       |
+| `InMemoryAccessTokenStore` | Dev/test store for Authentication API tokens                                |
+| `AccessTokenStore` (type)  | Interface for your own token store → [Authentication](13-authentication.md) |
 
 ---
 

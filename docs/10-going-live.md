@@ -10,6 +10,7 @@
 
 - [ ] Your **biller code** (example: `999`)
 - [ ] **ServiceType** codes, bank code and IBAN for each service
+- [ ] If E-SADAD uses the Authentication API: the shared **user** and **secret** (you choose them and give them to E-SADAD), and how they send the token on later calls
 - [ ] E-SADAD's **public certificate** (`.cer`)
 - [ ] Their official **result codes** (to replace the ⏳ defaults, see [Errors](06-errors.md))
 - [ ] A **BillPull sample**, if you have post-paid services

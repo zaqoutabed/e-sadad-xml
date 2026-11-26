@@ -6,6 +6,7 @@ import { ResultResolver } from './core/results';
 import { ServiceRegistry } from './core/services';
 import { CertificateSigner } from './crypto/signature';
 import { EsadadConfigError } from './errors';
+import { Authenticator, type AuthenticationResult } from './handlers/authenticationHandler';
 import { checkAvailability, type AvailabilityResult } from './handlers/availabilityHandler';
 import { BillPullHandler } from './handlers/billPullHandler';
 import { PaymentNotificationHandler } from './handlers/paymentNotificationHandler';
@@ -33,6 +34,7 @@ export class EsadadService {
   private readonly logger: Logger;
   private readonly pipeline: RequestPipeline;
   private readonly handlers: Record<ApiName, ApiHandler>;
+  private readonly authenticator?: Authenticator;
 
   constructor(config: EsadadConfig) {
     assertBaseConfig(config);
@@ -62,6 +64,8 @@ export class EsadadService {
       timestamp: config.timestamp ?? defaultTimestamp,
       hooks: config.hooks ?? {},
     });
+
+    if (config.authentication) this.authenticator = new Authenticator(config.authentication, signer, this.logger);
 
     const deps: HandlerDeps = {
       billerCode,
@@ -110,6 +114,29 @@ export class EsadadService {
       healthCheck: this.config.healthCheck,
       logger: this.logger,
     });
+  }
+
+  /** `true` when `authentication` is configured, so `POST /authentication` is served. */
+  get authenticationEnabled(): boolean {
+    return this.authenticator !== undefined;
+  }
+
+  /**
+   * Authentication API (`POST /authentication`). Pass the raw JSON body (string
+   * or Buffer) or the parsed object. Returns the HTTP status and the signed JSON
+   * body. Never throws.
+   */
+  async authenticate(body: unknown): Promise<AuthenticationResult> {
+    if (this.authenticator) return this.authenticator.authenticate(body);
+    return {
+      statusCode: 503,
+      body: { data: { status: 'error', message: 'Service unavailable', error_code: 503, tranTimestamp: '' }, signature: '' },
+    };
+  }
+
+  /** `true` when the token came from `authenticate` and has not expired. Always `false` without `authentication`. */
+  async verifyAccessToken(token: unknown): Promise<boolean> {
+    return this.authenticator ? this.authenticator.verifyAccessToken(token) : false;
   }
 
   /** Configuration of a service type, or `undefined`. */

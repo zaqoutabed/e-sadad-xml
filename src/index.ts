@@ -20,7 +20,7 @@ export {
 export type * from './types';
 
 // Signing and verification (also useful for simulating E-SADAD in tests).
-export { CertificateSigner, signData, verifyData } from './crypto/signature';
+export { CertificateSigner, signData, verifyData, type SignedTextEncoding } from './crypto/signature';
 export { loadPemPrivateKey, loadPfxPrivateKey, loadPublicKey } from './crypto/keys';
 export { signMessage, verifyMessage, type VerifyResult } from './crypto/message';
 export { canonicalMsgBody, canonicalize } from './xml/c14n';
@@ -38,6 +38,10 @@ export {
 
 // Storage
 export { InMemoryStore } from './storage/memory';
+export { InMemoryAccessTokenStore } from './storage/accessTokenMemory';
+
+// Authentication API
+export { authSigningString, hashAccessToken, type AuthenticationResult } from './handlers/authenticationHandler';
 
 // Availability
 export { requestAvailability, type AvailabilityClientOptions } from './client/availabilityClient';
